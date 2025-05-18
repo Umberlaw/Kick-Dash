@@ -1,0 +1,77 @@
+local AuraHighlights = {
+    Simple = {FillColor = Color3.fromRGB(255,255,255),FillTransparency = 0.75,OutlineColor = Color3.fromRGB(0,0,0),OutlineTransparency = .6,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 0.9, Kick = 0.3 ,Rage = 0.625},
+    
+    Azure = {FillColor = Color3.fromRGB(20,-10,-200),FillTransparency = 1.2,OutlineColor = Color3.fromRGB(77, 250, 253),OutlineTransparency = .3,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.2, Kick = 4 ,Rage = 2.5},
+    
+    Farty = {FillColor = Color3.fromRGB(110, -200, 400),FillTransparency = 1.05,OutlineColor = Color3.fromRGB(88, 191, 19),OutlineTransparency = 0,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.05, Kick = 1.65 ,Rage = 1.35},
+    
+    Paid =  {FillColor = Color3.fromRGB(48, 29, 103),FillTransparency =  0.85,OutlineColor = Color3.fromRGB(255, 179, 26),OutlineTransparency = 0,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 0.85, Kick = -1.3 ,Rage = -0.4},
+    
+    Frostbite =  {FillColor = Color3.fromRGB(116, 176, 255),FillTransparency =  0.825,OutlineColor = Color3.fromRGB(151, 209, 253),OutlineTransparency = 0.1625,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 0.825, Kick = -1.5 ,Rage = -0.5},
+    
+    Meteoric =  {FillColor = Color3.fromRGB(-255, 110, 125),FillTransparency =  1.125,OutlineColor = Color3.fromRGB(255, 39, 68),OutlineTransparency = 0,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.125, Kick = 4.25 ,Rage = 2},
+    
+    Flamefull =  {FillColor = Color3.fromRGB(-500, -40, 40),FillTransparency =  1.125,OutlineColor = Color3.fromRGB(253, 122, 35),OutlineTransparency = 0.4,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.125, Kick = 4 ,Rage = 1.9},
+    
+    Lightning =  {FillColor = Color3.fromRGB(-90, -80, -300),FillTransparency =  1.3,OutlineColor = Color3.fromRGB(255, 232, 149),OutlineTransparency = 0.1,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.3, Kick = 3 ,Rage = 1.825},
+    
+    Void =  {FillColor = Color3.fromRGB(42, 34, 68),FillTransparency =  -0.1,OutlineColor = Color3.fromRGB(114, 18, 232),OutlineTransparency = 0,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = -0.2325, Kick = -3.5 ,Rage = -1.25},
+    
+    Shiny =  {FillColor = Color3.fromRGB(-100, -100, -100),FillTransparency =  1.2,OutlineColor = Color3.fromRGB(255, 255, 255),OutlineTransparency = 0.1,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.2, Kick = 2.375 ,Rage = 1.8},
+    
+    Thunder =  {FillColor = Color3.fromRGB(-10, 25, -50),FillTransparency =  1.325,OutlineColor = Color3.fromRGB(68, 15, 227),OutlineTransparency = 0.1,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.325, Kick = 4 ,Rage = 2.55},
+    
+    Powerful =  {FillColor = Color3.fromRGB(-35, -35, -90),FillTransparency =  1.2,OutlineColor = Color3.fromRGB(53, 54, 81),OutlineTransparency = 0,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.2, Kick = 3 ,Rage = 2},
+    
+    Nightmare =  {FillColor = Color3.fromRGB(-20, 25, 50),FillTransparency =  1.1,OutlineColor = Color3.fromRGB(126, 14, 14),OutlineTransparency = 0,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.1, Kick = 4 ,Rage = 2},
+    
+    Explosive =  {FillColor = Color3.fromRGB(-255, -125, 120),FillTransparency =  1.2,OutlineColor = Color3.fromRGB(255, 89, 38),OutlineTransparency = 0,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.2, Kick = 2.625 ,Rage = 1.75},
+    
+    Kyuubi =  {FillColor = Color3.fromRGB(-255, -40, 25),FillTransparency =  1.2,OutlineColor = Color3.fromRGB(253, 0, 0),OutlineTransparency = 0.55,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.2, Kick = 3.5 ,Rage = 2},
+    
+    Crimson =  {FillColor = Color3.fromRGB(-120, -10, 10),FillTransparency =  1.4,OutlineColor = Color3.fromRGB(0, 0, 0),OutlineTransparency = 0,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.4, Kick = -2 ,Rage = -0.7},
+    
+    Wild =  {FillColor = Color3.fromRGB(-255, -255, -50),FillTransparency =  1.05,OutlineColor = Color3.fromRGB(35, 35, 35),OutlineTransparency = 0.35,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.05, Kick = 2.625 ,Rage = 1.75},
+    
+    Feral =  {FillColor = Color3.fromRGB(-150, -255, -255),FillTransparency =  1.05,OutlineColor = Color3.fromRGB(0, 0, 0),OutlineTransparency = 0.5,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.05, Kick = 2.5 ,Rage = 1.4},
+    
+    Gale =  {FillColor = Color3.fromRGB(-44, -255, -44),FillTransparency =  1.05,OutlineColor = Color3.fromRGB(49, 79, 31),OutlineTransparency = 0.5,
+    DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.05, Kick = 2.5 ,Rage = 1.8},
+
+Mysterious =  {FillColor = Color3.fromRGB(-20, -255, -20),FillTransparency =  1.1,OutlineColor = Color3.fromRGB(28, 81, 255),OutlineTransparency = 0.3,
+DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.1, Kick = 2.4 ,Rage = 1.4},
+
+Seismic =  {FillColor = Color3.fromRGB(-30, -120, -80),FillTransparency =  1.325,OutlineColor = Color3.fromRGB(127, 232, 253),OutlineTransparency = 0.4,
+DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.6, Kick = 3.25 ,Rage = 2.5},
+
+Foggy =  {FillColor = Color3.fromRGB(24, 24, 24),FillTransparency =  0.4,OutlineColor = Color3.fromRGB(255, 255, 255),OutlineTransparency = 0.8,
+DepthMode = Enum.HighlightDepthMode.Occluded,Default = 0.4, Kick = 1.3 ,Rage = 0.8},
+
+Slay =  {FillColor = Color3.fromRGB(-40, -40, -40),FillTransparency =  1.2,OutlineColor = Color3.fromRGB(253, 122, 29),OutlineTransparency = 0.325,
+DepthMode = Enum.HighlightDepthMode.Occluded,Default = 1.2, Kick = 2.5 ,Rage = 1.9},
+
+Toxic =  {FillColor = Color3.fromRGB(111, 163, 43),FillTransparency =  -0.4,OutlineColor = Color3.fromRGB(14, 72, 8),OutlineTransparency = 0,
+DepthMode = Enum.HighlightDepthMode.Occluded,Default = -0.4, Kick = -3 ,Rage = -1.6},
+
+    }   
+    
+    
+return AuraHighlights
