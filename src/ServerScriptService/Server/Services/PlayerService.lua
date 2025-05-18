@@ -5,6 +5,7 @@ local Knit = require(ReplicatedStorage.Packages.knit)
 
 local KickStlyeDatas = require(ReplicatedStorage.Shared.configs.KickStyleDatas)
 local HiglightDatas = require(ReplicatedStorage.Shared.configs.AuraHiglights)
+local FontDatas = require(ReplicatedStorage.Shared.configs.FontsConfig)
 
 --local Promise = require(Knit.Util.Promise)
 
@@ -100,6 +101,7 @@ function PlayerService:UpdatePlayerData(player, comingData: table)
 		Knocked = false,
 		RageActive = false,
 	}
+
 	if not self.PlayerDatas[player.UserId] then
 		self.PlayerDatas[player.UserId] = DataSet
 	end
@@ -111,6 +113,7 @@ function PlayerService:UpdatePlayerData(player, comingData: table)
 	self.Client.SendPlayerData:Fire(player, self.PlayerDatas[player.UserId])
 	local char = player.Character
 	local AuraHiglight = char:FindFirstChild("AURAHIGHLIGHT")
+	local DisplayName = char:FindFirstChild("DisplayName")
 
 	local AuraTable = {
 		FillColor = Color3.fromRGB(255, 255, 255),
@@ -127,6 +130,22 @@ function PlayerService:UpdatePlayerData(player, comingData: table)
 	end
 	if char.Humanoid.WalkSpeed > self.PlayerDatas[player.UserId].WalkSpeed then
 		char.Humanoid.WalkSpeed = self.PlayerDatas[player.UserId].WalkSpeed
+	end
+
+	if comingData.Aura or comingData.KickStyle then
+		DisplayName.Kick.Text = self.PlayerDatas[player.UserId].Aura
+			.. " "
+			.. KickStlyeDatas.Kicks[self.PlayerDatas[player.UserId].KickStyle].Cosmetic.DisplayName
+		DisplayName:FindFirstChild("Name").Text = player.Name
+		DisplayName.Kick.FontFace =
+			FontDatas[KickStlyeDatas.Kicks[self.PlayerDatas[player.UserId].KickStyle].Cosmetic.Font]
+		DisplayName.Kick:ClearAllChildren()
+		local targetGradientFolder =
+			ReplicatedStorage.Shared.Assets.Gradients.DisplayName:FindFirstChild(self.PlayerDatas[player.UserId].Aura)
+		for _, allDecorations in targetGradientFolder:GetChildren() do
+			local clonneddecor = allDecorations:Clone()
+			clonneddecor.Parent = DisplayName.Kick
+		end
 	end
 end
 
@@ -182,6 +201,17 @@ function PlayerService:SetPlayerDependicies(char)
 		AuraHighlight.Parent = char
 		AuraHighlight.Enabled = true
 	end
+
+	if not char.HumanoidRootPart:FindFirstChild("DisplayName") then
+		local DisplayNameClone = ReplicatedStorage.Shared.Assets.Indicators:FindFirstChild("DisplayName"):Clone()
+		print(DisplayNameClone)
+		print(DisplayNameClone:GetChildren())
+		DisplayNameClone.Parent = char
+		DisplayNameClone.Adornee = char:FindFirstChild("Head")
+		DisplayNameClone.Kick.Text = "ONLYFIFTEENCHARACTER"
+		DisplayNameClone:FindFirstChild("Name").Text = "PLAYERNAME"
+	end
+
 	char.Humanoid.WalkSpeed = 25
 end
 
@@ -203,6 +233,9 @@ end
 
 function PlayerService:KnitStart()
 	Players.PlayerAdded:Connect(function(player)
+		task.delay(5, function()
+			self:UpdatePlayerData(player, { Aura = "Flamefull" })
+		end)
 		player.CharacterAdded:Connect(function(character)
 			self.RagdollService:BuildCollideParts(player)
 			self:SetCollisionGroup(character)
