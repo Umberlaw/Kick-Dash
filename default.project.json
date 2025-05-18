@@ -2,11 +2,6 @@
   "name": "project",
   "tree": {
     "$className": "DataModel",
-    "Lighting": {
-      "$className": "Lighting",
-      "$ignoreUnknownInstances": true,
-      "$path": "src/Lighting"
-    },
     "ReplicatedStorage": {
       "$className": "ReplicatedStorage",
       "$ignoreUnknownInstances": true,
@@ -29,11 +24,6 @@
         "$path": "src/StarterPlayer/StarterPlayerScripts"
       },
       "$ignoreUnknownInstances": true
-    },
-    "Workspace": {
-      "$className": "Workspace",
-      "$ignoreUnknownInstances": true,
-      "$path": "src/Workspace"
     }
   }
 }
