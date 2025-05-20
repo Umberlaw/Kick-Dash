@@ -19,7 +19,6 @@ function Slowed:Remove(player)
 end
 
 function Slowed:Active(player, _, _)
-	print("Active edildi")
 	self.KnitServices["PlayerService"] = self.KnitServices["PlayerService"] or Knit.GetService("PlayerService")
 	local PlayersData = self.KnitServices["PlayerService"].PlayerDatas[player.UserId]
 	if not PlayersData then
@@ -30,7 +29,6 @@ function Slowed:Active(player, _, _)
 		self.OpenedTaskes[player.UserId] = task.spawn(function()
 			while true do
 				task.wait(1)
-				print(PlayersData)
 				if PlayersData.Debuffes["Slowed"] then
 					local SlowedTime = PlayersData.Debuffes["Slowed"].RemainingTime
 					SlowedTime = math.clamp(SlowedTime - 1, 0, math.huge) or 0

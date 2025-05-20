@@ -11,6 +11,8 @@ local AttackService = Knit.CreateService({
 function AttackService:Attack(player, hittedplayer, otherdatas)
 	print(player, hittedplayer, otherdatas)
 	self.StatusService:AddStatus(player, "Slowed", { RemainingTime = 10 })
+	self.PassiveService:AddPassivePoint(player, "Aura", 1)
+	self.PassiveService:AddPassivePoint(hittedplayer, "Kick", 1)
 end
 
 function AttackService:AuraChanings(player, AuraStatus)
@@ -19,6 +21,7 @@ end
 
 function AttackService:KnitInit()
 	self.StatusService = Knit.GetService("StatusService")
+	self.PassiveService = Knit.GetService("PassiveService")
 end
 
 function AttackService:KnitStart()

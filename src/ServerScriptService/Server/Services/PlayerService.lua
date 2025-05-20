@@ -76,7 +76,6 @@ function PlayerService:UpdateDebuffData(player, debuffName, debuffData)
 			end
 		end
 	end
-	print(TargetPlayerData.Debuffes)
 end
 
 function PlayerService:UpdatePlayerData(player, comingData: table)
@@ -202,7 +201,7 @@ function PlayerService:SetPlayerDependicies(char)
 		AuraHighlight.Enabled = true
 	end
 
-	if not char.HumanoidRootPart:FindFirstChild("DisplayName") then
+	if not char:FindFirstChild("DisplayName") then
 		local DisplayNameClone = ReplicatedStorage.Shared.Assets.Indicators:FindFirstChild("DisplayName"):Clone()
 		print(DisplayNameClone)
 		print(DisplayNameClone:GetChildren())
@@ -213,6 +212,18 @@ function PlayerService:SetPlayerDependicies(char)
 	end
 
 	char.Humanoid.WalkSpeed = 25
+
+	if not char:FindFirstChild("SymbolIndicators") then
+		local SymbolIndicators = Instance.new("Folder")
+		SymbolIndicators.Name = "SymbolIndicators"
+		SymbolIndicators.Parent = char
+	end
+
+	if not char:FindFirstChild("DebuffIndicators") then
+		local DebuffIndicators = Instance.new("Folder")
+		DebuffIndicators.Name = "DebuffIndicators"
+		DebuffIndicators.Parent = char
+	end
 end
 
 function PlayerService:SetCollisionGroup(character: Model)
@@ -233,9 +244,6 @@ end
 
 function PlayerService:KnitStart()
 	Players.PlayerAdded:Connect(function(player)
-		task.delay(5, function()
-			self:UpdatePlayerData(player, { Aura = "Flamefull" })
-		end)
 		player.CharacterAdded:Connect(function(character)
 			self.RagdollService:BuildCollideParts(player)
 			self:SetCollisionGroup(character)
