@@ -9,10 +9,22 @@ local AttackService = Knit.CreateService({
 })
 
 function AttackService:Attack(player, hittedplayer, otherdatas)
-	print(player, hittedplayer, otherdatas)
-	self.StatusService:AddStatus(player, "Slowed", { RemainingTime = 10 })
-	self.PassiveService:AddPassivePoint(player, "Aura", 1)
-	self.PassiveService:AddPassivePoint(hittedplayer, "Kick", 1)
+	local attackingPlayerDatas = self.PlayerService.PlayerDatas[player.UserId] or nil
+	if not attackingPlayerDatas then
+		warn("Playerin Datasi yok la")
+	end
+
+	--self.StatusService:AddStatus(player, "Slowed", { RemainingTime = 10 })
+
+	if type(attackingPlayerDatas.StylePassive) == "boolean" then
+		self.PassiveService:StartStylePassive(player)
+	end
+	if type(attackingPlayerDatas.AuraPassive) ~= "boolean" then
+		self.PassiveService:AddPassivePoint(player, "Aura", 2)
+	elseif type(attackingPlayerDatas.AuraPassive) == "boolean" and not attackingPlayerDatas.FusionPassive then
+		self.PassiveService:StartAuraPassive(player)
+	end
+	self.PassiveService:AddPassivePoint(hittedplayer, "Style", 2)
 end
 
 function AttackService:AuraChanings(player, AuraStatus)
@@ -22,6 +34,7 @@ end
 function AttackService:KnitInit()
 	self.StatusService = Knit.GetService("StatusService")
 	self.PassiveService = Knit.GetService("PassiveService")
+	self.PlayerService = Knit.GetService("PlayerService")
 end
 
 function AttackService:KnitStart()

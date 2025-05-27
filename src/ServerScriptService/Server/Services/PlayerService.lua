@@ -93,7 +93,7 @@ function PlayerService:UpdatePlayerData(player, comingData: table)
 		Ragdoll = 0,
 		Coin = 0,
 		Emerald = 0,
-		KickPassive = 0,
+		StylePassive = 0,
 		AuraPassive = 0,
 		Debuffes = {},
 		FusionPassive = false,
@@ -146,6 +146,7 @@ function PlayerService:UpdatePlayerData(player, comingData: table)
 			clonneddecor.Parent = DisplayName.Kick
 		end
 	end
+	print(self.PlayerDatas[player.UserId])
 end
 
 function PlayerService:LoadPlayersData(player)
@@ -169,7 +170,7 @@ function PlayerService:LoadPlayersData(player)
 				Emerald = comingData.Currencies.Emerald,
 				WalkSpeed = 25,
 				OverHealth = 0,
-				KickPassive = 0,
+				StylePassive = 0,
 				AuraPassive = 0,
 				Debuffes = {},
 				FusionPassive = false,
@@ -203,8 +204,6 @@ function PlayerService:SetPlayerDependicies(char)
 
 	if not char:FindFirstChild("DisplayName") then
 		local DisplayNameClone = ReplicatedStorage.Shared.Assets.Indicators:FindFirstChild("DisplayName"):Clone()
-		print(DisplayNameClone)
-		print(DisplayNameClone:GetChildren())
 		DisplayNameClone.Parent = char
 		DisplayNameClone.Adornee = char:FindFirstChild("Head")
 		DisplayNameClone.Kick.Text = "ONLYFIFTEENCHARACTER"

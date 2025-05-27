@@ -4,13 +4,45 @@ local Knit = require(ReplicatedStorage.Packages.knit)
 local Promise = require(Knit.Util.Promise)
 
 local KickStyleDatas = require(ReplicatedStorage.Shared.configs.KickStyleDatas)
+local Passives = require(script.Passives)
 
 local PassiveService =
 	Knit.CreateService({ Name = "PassiveService", Client = { PassiveActivate = Knit.CreateSignal() } })
 
+function PassiveService:StartAuraPassive(player)
+	local playersData = self.PlayerService.PlayerDatas[player.UserId]
+	if not playersData then
+		warn("PlayerData yok")
+	end
+	local targetAuraPassive = Passives[playersData.Aura] or nil
+	if not targetAuraPassive then
+		warn("Boyle bi aura yokmus kral")
+	else
+		targetAuraPassive:Start(player)
+		self.PlayerService:UpdatePlayerData(player, { AuraPassive = 0 })
+		self.Client.PassiveActivate:Fire(player, "Aura", 0)
+		self.EffectService:RemoveIndicator(player, "Aura")
+	end
+end
+
+function PassiveService:StartStylePassive(player)
+	local playersData = self.PlayerService.PlayerDatas[player.UserId]
+	if not playersData then
+		warn("PlayerData yok")
+	end
+	local TargetStylePassive = Passives[playersData.KickStyle] or nil
+	if not TargetStylePassive then
+		warn("Boyle bi Style yokmus kral")
+	else
+		TargetStylePassive:Start(player)
+		self.PlayerService:UpdatePlayerData(player, { StylePassive = 0 })
+		print(playersData,"Allah allah")
+		self.Client.PassiveActivate:Fire(player, "Style", 0)
+		self.EffectService:RemoveIndicator(player, "Style")
+	end
+end
+
 function PassiveService:AddPassivePoint(player, PassiveType, IncreaseAmount)
-	print(player, PassiveType, IncreaseAmount)
-	print(self.PlayerService, self.PlayerService.PlayerDatas[player.UserId]["FusionPassive"])
 	if
 		self.PlayerService.PlayerDatas[player.UserId]
 		and self.PlayerService.PlayerDatas[player.UserId]["FusionPassive"]
@@ -18,18 +50,20 @@ function PassiveService:AddPassivePoint(player, PassiveType, IncreaseAmount)
 		warn("Player Coktan Full set olmus")
 		return
 	end
-	local PlayerKickPassive = self.PlayerService.PlayerDatas[player.UserId].KickPassive or nil
+	local PlayerStylePassive = self.PlayerService.PlayerDatas[player.UserId].StylePassive or nil
 	local PlayerAuraPassive = self.PlayerService.PlayerDatas[player.UserId].AuraPassive or nil
-	local PlayerKickPassiveProgress, PlayerAuraPassiveProgress = PlayerKickPassive, PlayerAuraPassive
+	local PlayerKickPassiveProgress, PlayerAuraPassiveProgress = PlayerStylePassive, PlayerAuraPassive
 	local fusionPassive = false
-	if PassiveType == "Kick" then
-		if type(PlayerKickPassive) == "boolean" then
+	print(PlayerStylePassive, PlayerAuraPassive, "Interesting")
+	if PassiveType == "Style" then
+		if type(PlayerStylePassive) == "boolean" then
 			print("Kick Passive Active Zaten")
-		elseif PlayerKickPassive then
-			local newPlayerPassiveProgress = math.clamp(PlayerKickPassive + IncreaseAmount, 0, 3)
+		elseif PlayerStylePassive then
+			local newPlayerPassiveProgress = math.clamp(PlayerStylePassive + IncreaseAmount, 0, 3)
 			if newPlayerPassiveProgress >= 3 then
 				PlayerKickPassiveProgress = true
-				self.EffectService:CreateSymbols(player, "Kick")
+				self.EffectService:CreateSymbols(player, "Style")
+				self.EffectService:SetIndicator(player, "Style")
 			elseif newPlayerPassiveProgress < 3 then
 				PlayerKickPassiveProgress = newPlayerPassiveProgress
 			end
@@ -37,7 +71,6 @@ function PassiveService:AddPassivePoint(player, PassiveType, IncreaseAmount)
 		end
 	end
 	if PassiveType == "Aura" then
-		print("AURA PASIF TETIKLENECEK LO")
 		if type(PlayerAuraPassive) == "boolean" then
 			print("Aura Pasif Aktif Zaten")
 		elseif PlayerAuraPassive then
@@ -45,6 +78,7 @@ function PassiveService:AddPassivePoint(player, PassiveType, IncreaseAmount)
 			if newPlayerPassiveProgress >= 3 then
 				PlayerAuraPassiveProgress = true
 				self.EffectService:CreateSymbols(player, "Aura")
+				self.EffectService:SetIndicator(player, "Aura")
 			elseif newPlayerPassiveProgress < 3 then
 				PlayerAuraPassiveProgress = newPlayerPassiveProgress
 			end
@@ -58,15 +92,14 @@ function PassiveService:AddPassivePoint(player, PassiveType, IncreaseAmount)
 	end
 
 	if fusionPassive then
-		print(fusionPassive)
 		self.PlayerService:UpdatePlayerData(player, {
-			KickPassive = PlayerKickPassiveProgress,
+			StylePassive = PlayerKickPassiveProgress,
 			AuraPassive = PlayerAuraPassiveProgress,
 			FusionPassive = fusionPassive,
 		})
 	else
 		self.PlayerService:UpdatePlayerData(player, {
-			KickPassive = PlayerKickPassiveProgress,
+			StylePassive = PlayerKickPassiveProgress,
 			AuraPassive = PlayerAuraPassiveProgress,
 		})
 	end

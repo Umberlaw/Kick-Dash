@@ -8,19 +8,28 @@ local LocalPlayer = Players.LocalPlayer
 
 local PassiveController = Knit.CreateController({
 	Name = "PassiveController",
-	MainHud = LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("MainHUD"),
+	MainHud = LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("CoreHUD"),
 })
 
 function PassiveController:SetPassiveIndicators(PassiveType, Count)
-	print(PassiveType)
-	local passiveIndicatorArea = self.MainHud:FindFirstChild("BottomSide"):FindFirstChild(PassiveType .. "PassiveBar")
-		or nil
-	if passiveIndicatorArea then
+	local passiveIndicatorArea = self.MainHud
+		:FindFirstChild("Bottom")
+		:FindFirstChild("PassiveRelatives")
+		:FindFirstChild(PassiveType .. "PassiveBar")
+		:FindFirstChild("Points") or nil
+	if passiveIndicatorArea and Count > 0 then
 		for i = 1, Count do
-			local targetIndicator = passiveIndicatorArea.Bars:FindFirstChild(tostring(i)) or nil
+			local targetIndicator = passiveIndicatorArea:FindFirstChild("Point_" .. tostring(i)) or nil
 			if targetIndicator then
-				targetIndicator.ImageColor3 = Color3.fromRGB(0, 255, 0)
+				local targetPont = targetIndicator:FindFirstChild("PassivePoint_" .. PassiveType)
+				if targetPont then
+					targetPont.Visible = true
+				end
 			end
+		end
+	elseif passiveIndicatorArea and Count <= 0 then
+		for _, allPassivePoints in passiveIndicatorArea:GetChildren() do
+			allPassivePoints:FindFirstChild("PassivePoint_" .. PassiveType).Visible = false
 		end
 	end
 end

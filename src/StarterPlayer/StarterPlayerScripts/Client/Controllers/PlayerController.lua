@@ -27,8 +27,8 @@ local PlayerController = Knit.CreateController({
 		WalkSpeed = 50,
 		Coin = 0,
 		Debuffes = {},
-		KickPassive = false,
-		AuraPassive = false,
+		StylePassive = 0,
+		AuraPassive = 0,
 		FusionPassive = false,
 		Knocked = false,
 		Animations = {},
@@ -37,7 +37,6 @@ local PlayerController = Knit.CreateController({
 })
 
 function PlayerController:UpdatePlayersData(comingData)
-	print(comingData, "Burada Ragdoll NASIL YOK LA")
 	for keys, newDatas in comingData do
 		if self.Data[keys] then
 			self.Data[keys] = newDatas
