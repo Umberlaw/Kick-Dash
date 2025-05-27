@@ -212,8 +212,8 @@ function AttackController:StartKickPassiveAttack(atackpower)
 		warn("not attack power have")
 		return
 	end
+	self.AttackService.PassiveRelease:Fire() --If game need data will send there
 	if self.PlayersAttackData.Animations.PreparePassive.IsPlaying then
-		print("KICKPASSIVE BITIRILECEK")
 		if self.HiglightStatus ~= "Default" then
 			self.HiglightStatus = "Default"
 			self:SetHiglight(0)
@@ -288,7 +288,6 @@ function AttackController:StartKickPassiveAttack(atackpower)
 		self.AnimationConnections["AttackFinished"] = self.PlayersAttackData.Animations.AttackPassive
 			:GetMarkerReachedSignal("Finished")
 			:Connect(function()
-				print("Tamamlandi atak artik")
 				self.AnimationConnections["AttackRelease"]:Disconnect()
 				self.AnimationConnections["AttackRelease"] = nil
 				self.Attacking = false
@@ -348,7 +347,7 @@ function AttackController:KickAttack()
 	UserInputService.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			local success, playersData = self.PlayerController:GetPlayerData():await()
-			print(playersData)
+
 			if success and playersData and type(playersData.StylePassive) ~= "boolean" then
 				self.PlayersAttackData = playersData
 				local camsuccess, CameraDatas = self.CameraController:GetCameraData(playersData):await()
@@ -417,7 +416,6 @@ function AttackController:KickAttack()
 					end)
 				end
 			elseif success and playersData and type(playersData.StylePassive) == "boolean" then
-				print("KickPassiveGelmis LAAA", self.Attacking)
 				self.PlayersAttackData = playersData
 				local camsuccess, CameraDatas = self.CameraController:GetCameraData(playersData):await()
 				if not self.Attacking and not self.AttackCon and self.PlayersAttackData.Ragdoll <= 0 then

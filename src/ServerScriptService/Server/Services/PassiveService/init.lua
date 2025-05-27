@@ -36,9 +36,21 @@ function PassiveService:StartStylePassive(player)
 	else
 		TargetStylePassive:Start(player)
 		self.PlayerService:UpdatePlayerData(player, { StylePassive = 0 })
-		print(playersData,"Allah allah")
 		self.Client.PassiveActivate:Fire(player, "Style", 0)
 		self.EffectService:RemoveIndicator(player, "Style")
+	end
+end
+
+function PassiveService:StartStyleReleasePassive(player)
+	local playersData = self.PlayerService.PlayerDatas[player.UserId]
+	if not playersData then
+		warn("PlayerData yok")
+	end
+	local TargetStylePassive = Passives[playersData.KickStyle] or nil
+	if not TargetStylePassive then
+		warn("Boyle bi Style yokmus kral")
+	else
+		TargetStylePassive:StartRelease(player)
 	end
 end
 
@@ -54,7 +66,7 @@ function PassiveService:AddPassivePoint(player, PassiveType, IncreaseAmount)
 	local PlayerAuraPassive = self.PlayerService.PlayerDatas[player.UserId].AuraPassive or nil
 	local PlayerKickPassiveProgress, PlayerAuraPassiveProgress = PlayerStylePassive, PlayerAuraPassive
 	local fusionPassive = false
-	print(PlayerStylePassive, PlayerAuraPassive, "Interesting")
+
 	if PassiveType == "Style" then
 		if type(PlayerStylePassive) == "boolean" then
 			print("Kick Passive Active Zaten")

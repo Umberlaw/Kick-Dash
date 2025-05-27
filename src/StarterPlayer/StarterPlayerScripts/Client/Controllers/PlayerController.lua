@@ -54,7 +54,6 @@ function PlayerController:UpdatePlayersData(comingData)
 	for keys, newDatas in comingData do
 		if self.Data[keys] then
 			if keys == "KickStyle" and self.Data[keys] ~= newDatas then
-				print("anim updated")
 				self:UpdatePlayersAnimations(newDatas)
 			end
 			self.Data[keys] = newDatas

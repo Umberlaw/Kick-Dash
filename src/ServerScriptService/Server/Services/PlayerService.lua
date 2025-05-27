@@ -149,7 +149,6 @@ function PlayerService:UpdatePlayerData(player, comingData: table)
 			clonneddecor.Parent = DisplayName.Kick
 		end
 	end
-	print(self.PlayerDatas[player.UserId])
 end
 
 function PlayerService:LoadPlayersData(player)
@@ -293,9 +292,6 @@ function PlayerService:KnitStart()
 		self.DataService:LoadPlayersData(player)
 		self:LoadPlayersData(player)
 		self:PlayerConnections(player)
-		task.delay(5, function()
-			self:UpdatePlayerData(player, { KickStyle = "Twister", Aura = "Void" })
-		end)
 	end)
 	Players.PlayerRemoving:Connect(function(player)
 		self:ClearPlayerDatas(player)

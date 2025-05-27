@@ -15,5 +15,4 @@ local Fonts = {
 	SedgwickAveDisplay = Font.fromId(12187376357, Enum.FontWeight.Bold),
 	UnicaOne = Font.fromId(12187364842, Enum.FontWeight.Bold),
 }
-
 return Fonts

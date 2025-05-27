@@ -6,7 +6,11 @@ local Knit = require(ReplicatedStorage.Packages.knit)
 
 local AttackService = Knit.CreateService({
 	Name = "AttackService",
-	Client = { HiglightChange = Knit.CreateSignal(), Attack = Knit.CreateSignal() },
+	Client = {
+		HiglightChange = Knit.CreateSignal(),
+		Attack = Knit.CreateSignal(),
+		PassiveRelease = Knit.CreateSignal(),
+	},
 })
 
 function AttackService:Attack(player, hittedplayer, otherdatas)
@@ -21,13 +25,17 @@ function AttackService:Attack(player, hittedplayer, otherdatas)
 		self.PassiveService:StartStylePassive(player)
 	end
 	if type(attackingPlayerDatas.AuraPassive) ~= "boolean" then
-		self.PassiveService:AddPassivePoint(player, "Aura", 2)
+		self.PassiveService:AddPassivePoint(player, "Aura", 1)
 	elseif type(attackingPlayerDatas.AuraPassive) == "boolean" and not attackingPlayerDatas.FusionPassive then
 		self.PassiveService:StartAuraPassive(player)
 	end
-	self.PassiveService:AddPassivePoint(hittedplayer, "Style", 2)
+	self.PassiveService:AddPassivePoint(hittedplayer, "Style", 3)
 	self:GiveAttackBonuses(player)
 	self:GiveHitBonusses(player, hittedplayer)
+end
+
+function AttackService:StylePassiveRelease(player)
+	self.PassiveService:StartStyleReleasePassive(player)
 end
 
 function AttackService:GiveAttackBonuses(player) -- For HItting playerBonusses mostly +
@@ -75,6 +83,9 @@ function AttackService:KnitStart()
 	end)
 	self.Client.Attack:Connect(function(player, AttackingPlayer, otherdatas)
 		self:Attack(player, AttackingPlayer, otherdatas)
+	end)
+	self.Client.PassiveRelease:Connect(function(player)
+		self:StylePassiveRelease(player)
 	end)
 end
 
