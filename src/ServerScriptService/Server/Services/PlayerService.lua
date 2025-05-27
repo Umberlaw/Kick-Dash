@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Knit = require(ReplicatedStorage.Packages.knit)
 
@@ -13,6 +14,7 @@ local PlayerService = Knit.CreateService({
 	Name = "PlayerService",
 	Client = { SendPlayerData = Knit.CreateSignal() },
 	PlayerDatas = {},
+	PlayerCons = {},
 })
 
 function PlayerService:ClearPlayerDatas(player)
@@ -80,13 +82,14 @@ end
 
 function PlayerService:UpdatePlayerData(player, comingData: table)
 	local DataSet = {
-		KickStyle = "Nil",
-		Aura = "Nil",
+		KickStyle = "",
+		Aura = "",
 		MaxPower = 0,
 		Health = 0,
 		MaximumHealth = 0,
 		OverHealth = 0,
 		Stamina = 0,
+		MaximumStamina = 100,
 		Rage = 0,
 		MaximumRage = 0,
 		WalkSpeed = 25,
@@ -234,6 +237,45 @@ function PlayerService:SetCollisionGroup(character: Model)
 	end
 end
 
+function PlayerService:PlayerConnections(player)
+	local char = player.Character
+	local counter = 1
+	if not self.PlayerCons[player.UserId] then
+		self.PlayerCons[player.UserId] = {}
+	end
+	self.PlayerCons[player.UserId]["Stamina"] = task.spawn(function()
+		while task.wait(1) do
+			local playersTargetData = self.PlayerDatas[player.UserId]
+			if not playersTargetData then
+				warn("Data yok")
+				return
+			end
+			if math.floor(char.Humanoid.MoveDirection.Magnitude) > 0 then
+				if counter > 0 then
+					counter = -1
+				end
+				local decreasingStamina =
+					math.clamp(playersTargetData.Stamina + counter, 0, playersTargetData.MaximumStamina)
+				counter = math.clamp(counter - 1, -10, 1)
+				if decreasingStamina ~= playersTargetData.Stamina then
+					self:UpdatePlayerData(player, { Stamina = decreasingStamina })
+				end
+			elseif math.floor(char.Humanoid.MoveDirection.Magnitude) <= 0 then
+				if counter < 0 then
+					counter = 1
+				end
+				local decreasingStamina =
+					math.clamp(playersTargetData.Stamina + counter, 0, playersTargetData.MaximumStamina)
+
+				counter = math.clamp(counter + 1, 1, 10)
+				if decreasingStamina ~= playersTargetData.Stamina then
+					self:UpdatePlayerData(player, { Stamina = decreasingStamina })
+				end
+			end
+		end
+	end)
+end
+
 function PlayerService:KnitInit()
 	self.RagdollService = Knit.GetService("RagdollService")
 	self.DataService = Knit.GetService("DataService")
@@ -250,6 +292,10 @@ function PlayerService:KnitStart()
 		end)
 		self.DataService:LoadPlayersData(player)
 		self:LoadPlayersData(player)
+		self:PlayerConnections(player)
+		task.delay(5, function()
+			self:UpdatePlayerData(player, { KickStyle = "Twister", Aura = "Void" })
+		end)
 	end)
 	Players.PlayerRemoving:Connect(function(player)
 		self:ClearPlayerDatas(player)

@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local KickStyleDatas = require(ReplicatedStorage.Shared.configs.KickStyleDatas)
 local Knit = require(ReplicatedStorage.Packages.knit)
 --local Promise = require(Knit.Util.Promise)
 
@@ -25,6 +26,37 @@ function AttackService:Attack(player, hittedplayer, otherdatas)
 		self.PassiveService:StartAuraPassive(player)
 	end
 	self.PassiveService:AddPassivePoint(hittedplayer, "Style", 2)
+	self:GiveAttackBonuses(player)
+	self:GiveHitBonusses(player, hittedplayer)
+end
+
+function AttackService:GiveAttackBonuses(player) -- For HItting playerBonusses mostly +
+	local playerDatas = self.PlayerService.PlayerDatas[player.UserId]
+	if not playerDatas then
+		warn("pLayerin data eksik baba")
+		return
+	end
+	self.PlayerService:UpdatePlayerData(
+		player,
+		{ Stamina = math.clamp(playerDatas.Stamina + 20, 0, playerDatas.MaximumStamina) }
+	)
+end
+
+function AttackService:GiveHitBonusses(hittingplayer, hittedplayer) -- For Beating Player bonusses mostly -
+	local playerDatas = self.PlayerService.PlayerDatas[hittingplayer.UserId]
+	if not playerDatas then
+		warn("pLayerin data eksik baba")
+		return
+	end
+	local KickDamage = if KickStyleDatas.Kicks[playerDatas.KickStyle]
+		then KickStyleDatas.Kicks[playerDatas.KickStyle].Stats.Damage
+		else nil
+	if KickDamage then
+		self.PlayerService:UpdatePlayerData(hittedplayer, {
+			Health = math.clamp(playerDatas.Health - KickDamage, 0, playerDatas.MaximumHealth),
+			Stamina = math.clamp(playerDatas.Stamina - 20, 0, playerDatas.MaximumStamina),
+		})
+	end
 end
 
 function AttackService:AuraChanings(player, AuraStatus)
