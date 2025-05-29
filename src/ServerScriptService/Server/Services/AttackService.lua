@@ -29,7 +29,7 @@ function AttackService:Attack(player, hittedplayer, otherdatas)
 	elseif type(attackingPlayerDatas.AuraPassive) == "boolean" and not attackingPlayerDatas.FusionPassive then
 		self.PassiveService:StartAuraPassive(player)
 	end
-	self.PassiveService:AddPassivePoint(hittedplayer, "Style", 3)
+	self.PassiveService:AddPassivePoint(hittedplayer, "Style", 2)
 	self:GiveAttackBonuses(player)
 	self:GiveHitBonusses(player, hittedplayer)
 end
@@ -59,11 +59,24 @@ function AttackService:GiveHitBonusses(hittingplayer, hittedplayer) -- For Beati
 	local KickDamage = if KickStyleDatas.Kicks[playerDatas.KickStyle]
 		then KickStyleDatas.Kicks[playerDatas.KickStyle].Stats.Damage
 		else nil
+
 	if KickDamage then
-		self.PlayerService:UpdatePlayerData(hittedplayer, {
-			Health = math.clamp(playerDatas.Health - KickDamage, 0, playerDatas.MaximumHealth),
-			Stamina = math.clamp(playerDatas.Stamina - 20, 0, playerDatas.MaximumStamina),
-		})
+		local LeftingOverHealth = math.clamp(playerDatas.OverHealth - KickDamage, 0, 100)
+		if LeftingOverHealth == 0 then
+			self.PlayerService:UpdatePlayerData(hittedplayer, {
+				Health = math.clamp(
+					playerDatas.Health - (KickDamage - playerDatas.OverHealth),
+					0,
+					playerDatas.MaximumHealth
+				),
+				Stamina = math.clamp(playerDatas.Stamina - 20, 0, playerDatas.MaximumStamina),
+			})
+		elseif LeftingOverHealth ~= 0 then
+			self.PlayerService:UpdatePlayerData(hittedplayer, {
+				OverHealth = math.clamp(LeftingOverHealth, 0, 100),
+				Stamina = math.clamp(playerDatas.Stamina - 20, 0, playerDatas.MaximumStamina),
+			})
+		end
 	end
 end
 

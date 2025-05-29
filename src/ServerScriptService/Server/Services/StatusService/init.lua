@@ -26,12 +26,12 @@ function StatusService:AddStatus(player, StatuName, StatusDetails)
 	self.PlayerService:UpdateDebuffData(player, StatuName, StatusDetails)
 end
 
-function StatusService:ActivateDebuff(player, debufName)
+function StatusService:ActivateDebuff(player, debufName, details)
 	if not StatusData[debufName] then
 		warn("Not find any status like that")
 		return
 	end
-	StatusData[debufName]:Active(player, debufName)
+	StatusData[debufName]:Active(player, details)
 end
 
 function StatusService:KnitInit()

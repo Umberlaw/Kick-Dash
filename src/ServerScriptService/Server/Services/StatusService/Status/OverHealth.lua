@@ -22,11 +22,10 @@ function OverHealth:Active(player, OverHealthAmount)
 	if not self.OpenedTaskes[player.UserId] then
 		self.OpenedTaskes[player.UserId] = task.spawn(function()
 			while task.wait(1) do
-				local playerOverHealth = self.KnitServices["PlayerService"].PlayerDatas[player.UserId].OverHealth or nil
+				local playerOverHealth = self.KnitServices["PlayerService"].PlayerDatas[player.UserId].OverHealth or 0
 				local newOverHealth = math.clamp(playerOverHealth - 2, 0, 100)
 				if newOverHealth ~= 0 then
 					self.KnitServices["PlayerService"]:UpdatePlayerData(player, { OverHealth = newOverHealth })
-					print(newOverHealth, "uPDATED", player)
 				elseif newOverHealth == 0 then
 					self.OpenedTaskes[player.UserId] = nil
 					print(player, "OverHealth finished")

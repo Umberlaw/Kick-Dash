@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local ContentProvider = game:GetService("ContentProvider")
+local TweenService = game:GetService("TweenService")
 
 local Assets = ReplicatedStorage:WaitForChild("Shared").Assets
 
@@ -41,12 +42,12 @@ local PlayerController = Knit.CreateController({
 function PlayerController:UpdateStaminaBar()
 	local StaminaBar = self.CoreHUD.Bottom.Stats.SP
 	local NewValue = math.floor((self.Data.Stamina / self.Data.MaximumStamina) * 100)
-	StaminaBar.Value.Text = tostring(NewValue)
+	StaminaBar.Value.Text = tostring(math.floor(NewValue))
 end
 
 function PlayerController:UpdateHealthBar()
 	local HealthBar = self.CoreHUD.Bottom.Stats.HP
-	local NewValue = math.floor((self.Data.Health / self.Data.MaximumHealth) * 100)
+	local NewValue = math.floor(((self.Data.Health + self.Data.OverHealth) / self.Data.MaximumHealth) * 100)
 	HealthBar.Value.Text = tostring(NewValue)
 end
 
@@ -60,7 +61,7 @@ function PlayerController:UpdatePlayersData(comingData)
 			if keys == "Stamina" then
 				self:UpdateStaminaBar()
 			end
-			if keys == "Health" then
+			if keys == "Health" or keys == "OverHealth" then
 				self:UpdateHealthBar()
 			end
 		end
