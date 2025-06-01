@@ -53,7 +53,7 @@ end
 
 function PlayerController:UpdatePlayersData(comingData)
 	for keys, newDatas in comingData do
-		if self.Data[keys] then
+		if self.Data[keys] ~= nil then
 			if keys == "KickStyle" and self.Data[keys] ~= newDatas then
 				self:UpdatePlayersAnimations(newDatas)
 			end

@@ -169,6 +169,7 @@ function AttackController:StartKickAttack(atackpower)
 										table.insert(self.HittedChars, allTouchingitems.Parent)
 										self.ProtectSelfRagdoll = true
 										self.RagdollController:NPCRagdoll(allTouchingitems.Parent, KnockBackDatas) -- Burayada saldiri hasar rage pasif ssitemleri eklenecek
+										self.AttackService.NPCAttack:Fire(allTouchingitems.Parent, { "tEST" })
 									end
 								end
 								task.wait()
@@ -277,6 +278,7 @@ function AttackController:StartKickPassiveAttack(atackpower)
 										table.insert(self.HittedChars, allTouchingitems.Parent)
 										self.ProtectSelfRagdoll = true
 										self.RagdollController:NPCRagdoll(allTouchingitems.Parent, KnockBackDatas) -- Burayada saldiri hasar rage pasif ssitemleri eklenecek
+										self.AttackService.NPCAttack:Fire(allTouchingitems.Parent, { "tEST" })
 									end
 								end
 								task.wait()
@@ -347,11 +349,17 @@ function AttackController:KickAttack()
 	UserInputService.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			local success, playersData = self.PlayerController:GetPlayerData():await()
-
+			print(playersData)
 			if success and playersData and type(playersData.StylePassive) ~= "boolean" then
 				self.PlayersAttackData = playersData
+				print(self.PlayersAttackData.Knocked)
 				local camsuccess, CameraDatas = self.CameraController:GetCameraData(playersData):await()
-				if not self.Attacking and not self.AttackCon and self.PlayersAttackData.Ragdoll <= 0 then
+				if
+					not self.Attacking
+					and not self.AttackCon
+					and self.PlayersAttackData.Ragdoll <= 0
+					and not self.PlayersAttackData.Knocked
+				then
 					self.AttackPower = 0
 					if self.CameraCon then
 						self.CameraCon:Disconnect()

@@ -9,7 +9,7 @@ local Passives = require(script.Passives)
 local PassiveService =
 	Knit.CreateService({ Name = "PassiveService", Client = { PassiveActivate = Knit.CreateSignal() } })
 
-function PassiveService:StartAuraPassive(player)
+function PassiveService:StartAuraPassive(player, otherdatas)
 	local playersData = self.PlayerService.PlayerDatas[player.UserId]
 	if not playersData then
 		warn("PlayerData yok")
@@ -18,7 +18,7 @@ function PassiveService:StartAuraPassive(player)
 	if not targetAuraPassive then
 		warn("Boyle bi aura yokmus kral")
 	else
-		targetAuraPassive:Start(player)
+		targetAuraPassive:Start(player, otherdatas)
 		self.PlayerService:UpdatePlayerData(player, { AuraPassive = 0 })
 		self.Client.PassiveActivate:Fire(player, "Aura", 0)
 		self.EffectService:RemoveIndicator(player, "Aura")

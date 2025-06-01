@@ -17,6 +17,40 @@ local PlayerService = Knit.CreateService({
 	PlayerCons = {},
 })
 
+---General Player Events---------
+function PlayerService:Knocked(knockedPlayer)
+	local knockDatas = { Knocked = true, WalkSpeed = 0, Ragdoll = 0 }
+	print(knockDatas)
+	self:UpdatePlayerData(knockedPlayer, knockDatas)
+	task.wait(1)
+	local targetPlayerData = self.PlayerDatas[knockedPlayer.UserId]
+	print(targetPlayerData, "Burada true olmaliydi")
+	task.delay(4, function()
+		self:Respawn(knockedPlayer)
+	end)
+end
+
+function PlayerService:Respawn(RespawningPlayer)
+	local playerData = self.PlayerDatas[RespawningPlayer.UserId]
+	for debufNames, _ in playerData.Debuffes do
+		self.StatusService:RemoveStatus(RespawningPlayer, debufNames)
+	end
+	self:UpdatePlayerData(RespawningPlayer, {
+		Health = playerData.MaximumHealth,
+		Debuffes = {},
+		Stamina = playerData.MaximumStamina,
+		AuraPassive = 0,
+		StylePassive = 0,
+		FusionPassive = false,
+		Ragdoll = 0,
+		WalkSpeed = 25,
+		Knocked = false,
+		RageActive = false,
+		OverHealth = 0,
+	})
+end
+---------------------------
+
 function PlayerService:ClearPlayerDatas(player)
 	local TargetPlayerData = self.PlayerDatas[player.UserId]
 
@@ -107,8 +141,9 @@ function PlayerService:UpdatePlayerData(player, comingData: table)
 	if not self.PlayerDatas[player.UserId] then
 		self.PlayerDatas[player.UserId] = DataSet
 	end
+
 	for keys, changindatas in comingData do
-		if self.PlayerDatas[player.UserId][keys] then
+		if self.PlayerDatas[player.UserId][keys] ~= nil then
 			self.PlayerDatas[player.UserId][keys] = changindatas
 		end
 	end
@@ -210,6 +245,7 @@ function PlayerService:SetPlayerDependicies(char)
 		DisplayNameClone.Adornee = char:FindFirstChild("Head")
 		DisplayNameClone.Kick.Text = "ONLYFIFTEENCHARACTER"
 		DisplayNameClone:FindFirstChild("Name").Text = "PLAYERNAME"
+		DisplayNameClone.AlwaysOnTop = false
 	end
 
 	char.Humanoid.WalkSpeed = 25
@@ -273,6 +309,26 @@ function PlayerService:PlayerConnections(player)
 			end
 		end
 	end)
+	self.PlayerCons[player.UserId]["WalkSpeed"] = task.spawn(function()
+		while task.wait(0.3) do
+			local targetPlayerData = self.PlayerDatas[player.UserId]
+			local char = player.Character
+			if not targetPlayerData then
+				warn("Data yok")
+				return
+			end
+			if targetPlayerData.Stamina <= 0 then
+				if targetPlayerData.WalkSpeed > 16 then
+					self:UpdatePlayerData(player, { WalkSpeed = 16 })
+				end
+			elseif targetPlayerData.Stamina > 0 then
+				if targetPlayerData.WalkSpeed == 16 then
+					self:UpdatePlayerData(player, { WalkSpeed = 22 })
+				end
+			end
+			char.Humanoid.WalkSpeed = targetPlayerData.WalkSpeed
+		end
+	end)
 end
 
 function PlayerService:KnitInit()
@@ -284,6 +340,10 @@ end
 
 function PlayerService:KnitStart()
 	Players.PlayerAdded:Connect(function(player)
+		task.delay(5, function()
+			print("Olduruluyorsun")
+			self:UpdatePlayerData(player, { Health = 10 })
+		end)
 		player.CharacterAdded:Connect(function(character)
 			self.RagdollService:BuildCollideParts(player)
 			self:SetCollisionGroup(character)
