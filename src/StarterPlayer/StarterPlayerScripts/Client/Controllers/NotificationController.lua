@@ -19,7 +19,9 @@ function NotificationController:CreateIndicator(infodetails)
 		then NotificationFrame.NotificationTemplates.KickHit:Clone()
 		elseif infodetails.IndicatorType == "Knockout" then NotificationFrame.NotificationTemplates.Knockout:Clone()
 		elseif infodetails.IndicatorType == "Wipeout" then NotificationFrame.NotificationTemplates.Wipeout:Clone()
-		elseif infodetails.IndicatorType == "Hit" then NotificationFrame.NotificationTemplates.Hit:Clone()
+		elseif
+			infodetails.IndicatorType == "HitTaken"
+		then NotificationFrame.NotificationTemplates.HitTaken:Clone() --Vurulan kisiye gidiyo
 		else nil
 	if not KickTemplate then
 		warn("Kick Template Data didnt find")

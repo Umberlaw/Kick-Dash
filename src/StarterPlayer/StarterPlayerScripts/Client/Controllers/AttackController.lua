@@ -155,10 +155,11 @@ function AttackController:StartKickAttack(atackpower)
 									then
 										table.insert(self.HittedChars, allTouchingitems.Parent)
 										self.ProtectSelfRagdoll = true
-										self.RagdollController:RagdollChar(allTouchingitems.Parent, KnockBackDatas) --ToDo  ileriye donuk saldiri hasar rage kisimlari eklenecek
+
 										self.AttackService.Attack:Fire(
 											game.Players:GetPlayerFromCharacter(allTouchingitems.Parent),
-											{ "tEST" }
+											{ "tEST" }, --this for in the future
+											KnockBackDatas
 										)
 									elseif
 										not game.Players:GetPlayerFromCharacter(allTouchingitems.Parent)
@@ -200,8 +201,12 @@ function AttackController:StartKickAttack(atackpower)
 						KnockPower = 25,
 						RagdollDuration = 3,
 					}
-					self.RagdollController:RagdollChar(Char, KnockBackDatas)
-					self.AttackService.Attack:Fire(game.Players:GetPlayerFromCharacter(Char), { "tEST" })
+
+					self.AttackService.Attack:Fire(
+						game.Players:GetPlayerFromCharacter(Char),
+						{ "tEST" },
+						KnockBackDatas
+					)
 				end
 				self.ProtectSelfRagdoll = false
 			end)
@@ -264,10 +269,11 @@ function AttackController:StartKickPassiveAttack(atackpower)
 									then
 										table.insert(self.HittedChars, allTouchingitems.Parent)
 										self.ProtectSelfRagdoll = true
-										self.RagdollController:RagdollChar(allTouchingitems.Parent, KnockBackDatas) --ToDo  ileriye donuk saldiri hasar rage kisimlari eklenecek
+
 										self.AttackService.Attack:Fire(
 											game.Players:GetPlayerFromCharacter(allTouchingitems.Parent),
-											{ "tEST" }
+											{ "tEST" },
+											KnockBackDatas
 										)
 									elseif
 										not game.Players:GetPlayerFromCharacter(allTouchingitems.Parent)
@@ -309,8 +315,11 @@ function AttackController:StartKickPassiveAttack(atackpower)
 						KnockPower = 25,
 						RagdollDuration = 3,
 					}
-					self.RagdollController:RagdollChar(Char, KnockBackDatas)
-					self.AttackService.Attack:Fire(game.Players:GetPlayerFromCharacter(Char), { "tEST" })
+					self.AttackService.Attack:Fire(
+						game.Players:GetPlayerFromCharacter(Char),
+						{ "tEST" },
+						KnockBackDatas
+					)
 				end
 				self.ProtectSelfRagdoll = false
 			end)
@@ -349,10 +358,9 @@ function AttackController:KickAttack()
 	UserInputService.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			local success, playersData = self.PlayerController:GetPlayerData():await()
-			print(playersData)
+
 			if success and playersData and type(playersData.StylePassive) ~= "boolean" then
 				self.PlayersAttackData = playersData
-				print(self.PlayersAttackData.Knocked)
 				local camsuccess, CameraDatas = self.CameraController:GetCameraData(playersData):await()
 				if
 					not self.Attacking
@@ -544,6 +552,9 @@ function AttackController:KickAttack()
 		end
 	end)
 	UserInputService.JumpRequest:Connect(function()
+		if self.PlayersAttackData and self.PlayersAttackData.Knocked then
+			Char.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
+		end
 		if self.Attacking then
 			Char.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
 		else

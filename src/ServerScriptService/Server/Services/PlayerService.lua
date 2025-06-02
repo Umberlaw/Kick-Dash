@@ -8,11 +8,15 @@ local KickStlyeDatas = require(ReplicatedStorage.Shared.configs.KickStyleDatas)
 local HiglightDatas = require(ReplicatedStorage.Shared.configs.AuraHiglights)
 local FontDatas = require(ReplicatedStorage.Shared.configs.FontsConfig)
 
---local Promise = require(Knit.Util.Promise)
+local Promise = require(Knit.Util.Promise)
 
 local PlayerService = Knit.CreateService({
 	Name = "PlayerService",
-	Client = { SendPlayerData = Knit.CreateSignal() },
+	Client = {
+		SendPlayerData = Knit.CreateSignal(),
+		HealthUpdate = Knit.CreateSignal(),
+		StaminaUpdate = Knit.CreateSignal(),
+	},
 	PlayerDatas = {},
 	PlayerCons = {},
 })
@@ -20,14 +24,51 @@ local PlayerService = Knit.CreateService({
 ---General Player Events---------
 function PlayerService:Knocked(knockedPlayer)
 	local knockDatas = { Knocked = true, WalkSpeed = 0, Ragdoll = 0 }
-	print(knockDatas)
 	self:UpdatePlayerData(knockedPlayer, knockDatas)
-	task.wait(1)
-	local targetPlayerData = self.PlayerDatas[knockedPlayer.UserId]
-	print(targetPlayerData, "Burada true olmaliydi")
-	task.delay(4, function()
-		self:Respawn(knockedPlayer)
-	end)
+	local KnockedPlayerData = self.PlayerDatas[knockedPlayer.UserId]
+
+	if not KnockedPlayerData then
+		warn("Datasi yok bunun")
+		return
+	end
+
+	local function KnockedAnimation()
+		Promise.new(function(resolve, reject)
+			local KnockDownAnimAsset = ReplicatedStorage.Shared.Assets.Animations.Commons.KnockDown
+			local KnockUpAnimAsset = ReplicatedStorage.Shared.Assets.Animations.Commons.KnockUp
+			local RollingAnimAsset = ReplicatedStorage.Shared.Assets.Animations.Commons.Rolling
+			if not KnockedPlayerData.PlayerAnims["KnockDown"] then
+				local Animations = {
+					KnockDown = knockedPlayer.Character.Humanoid.Animator:LoadAnimation(KnockDownAnimAsset),
+					KnockUp = knockedPlayer.Character.Humanoid.Animator:LoadAnimation(KnockUpAnimAsset),
+					Rolling = knockedPlayer.Character.Humanoid.Animator:LoadAnimation(RollingAnimAsset),
+				}
+				self:UpdatePlayerData(knockedPlayer, { PlayerAnims = Animations })
+
+				KnockedPlayerData.PlayerAnims["KnockDown"]:GetMarkerReachedSignal("Rolling"):Connect(function()
+					KnockedPlayerData.PlayerAnims["Rolling"]:Play()
+					KnockedPlayerData.PlayerAnims["Rolling"].Looped = true
+					task.delay(4, function() -- task delay yerine Wish olayi gelecek
+						KnockedPlayerData.PlayerAnims["Rolling"]:Stop()
+						KnockedPlayerData.PlayerAnims["KnockUp"]:Play()
+						print("Tamam tekrar oynatti iste ")
+					end)
+				end)
+				KnockedPlayerData.PlayerAnims["KnockUp"]:GetMarkerReachedSignal("End"):Connect(function()
+					self:Respawn(knockedPlayer)
+				end)
+			end
+			KnockedPlayerData.PlayerAnims["KnockDown"]:Play()
+			if not KnockedPlayerData then
+				reject("Datan yok birader")
+			end
+		end):catch(function(err)
+			print(err)
+		end)
+	end
+
+	----ANIMATION AREA
+	KnockedAnimation()
 end
 
 function PlayerService:Respawn(RespawningPlayer)
@@ -48,8 +89,12 @@ function PlayerService:Respawn(RespawningPlayer)
 		RageActive = false,
 		OverHealth = 0,
 	})
+	self.PassiveService:AddPassivePoint(RespawningPlayer, "Aura", 0)
+	self.PassiveService:AddPassivePoint(RespawningPlayer, "Style", 0)
 end
 ---------------------------
+
+---------------Player Data Areas-------------------------------
 
 function PlayerService:ClearPlayerDatas(player)
 	local TargetPlayerData = self.PlayerDatas[player.UserId]
@@ -136,6 +181,7 @@ function PlayerService:UpdatePlayerData(player, comingData: table)
 		FusionPassive = false,
 		Knocked = false,
 		RageActive = false,
+		PlayerAnims = {},
 	}
 
 	if not self.PlayerDatas[player.UserId] then
@@ -220,7 +266,13 @@ function PlayerService:LoadPlayersData(player)
 			print(err, "Basarili deildostum")
 		end)
 end
+------------------------------------------------
 
+---------------Player Visual Areas---------------------------------
+
+----------------------------------------------------
+
+----PLAYER STARTING EVENTS--------------------------
 function PlayerService:SetPlayerDependicies(char)
 	if not char.HumanoidRootPart:FindFirstChild("KnockBackAttachment") then
 		local KBAttachment = Instance.new("Attachment")
@@ -330,20 +382,18 @@ function PlayerService:PlayerConnections(player)
 		end
 	end)
 end
+--------------------------------------------------------
 
 function PlayerService:KnitInit()
 	self.RagdollService = Knit.GetService("RagdollService")
 	self.DataService = Knit.GetService("DataService")
 	self.StatusService = Knit.GetService("StatusService")
 	self.EffectService = Knit.GetService("EffectService")
+	self.PassiveService = Knit.GetService("PassiveService")
 end
 
 function PlayerService:KnitStart()
 	Players.PlayerAdded:Connect(function(player)
-		task.delay(5, function()
-			print("Olduruluyorsun")
-			self:UpdatePlayerData(player, { Health = 10 })
-		end)
 		player.CharacterAdded:Connect(function(character)
 			self.RagdollService:BuildCollideParts(player)
 			self:SetCollisionGroup(character)

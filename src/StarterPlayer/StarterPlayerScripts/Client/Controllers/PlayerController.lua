@@ -12,6 +12,8 @@ local Promise = require(Knit.Util.Promise)
 local Player = Players.LocalPlayer
 local Char = Player.Character or Player.CharacterAdded:Wait()
 local PlayerGui = Player:WaitForChild("PlayerGui")
+local HealthBarPromise = nil
+local StaminaBarPromise = nil
 
 local PlayerController = Knit.CreateController({
 	Name = "PlayerController",
@@ -41,14 +43,81 @@ local PlayerController = Knit.CreateController({
 
 function PlayerController:UpdateStaminaBar()
 	local StaminaBar = self.CoreHUD.Bottom.Stats.SP
+	local StaminaBarRedFrame = StaminaBar.Bar_Change
+	local StaminaBarMain = StaminaBarRedFrame.Bar
+	local StaminaBarGlow = StaminaBar.BarFrame
 	local NewValue = math.floor((self.Data.Stamina / self.Data.MaximumStamina) * 100)
 	StaminaBar.Value.Text = tostring(math.floor(NewValue))
+
+	if StaminaBarPromise then
+		StaminaBarPromise:await()
+	end
+	StaminaBarPromise = Promise.new(function(resolve, reject)
+		local BarChangeRatio = (2 * (NewValue / 100)) - 1
+		local ColorBarTween = TweenService:Create(
+			StaminaBarMain.Gradient,
+			TweenInfo.new(0.74, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0),
+			{ Offset = Vector2.new(BarChangeRatio, 0) }
+		)
+		local RedFrameTween = TweenService:Create(
+			StaminaBarRedFrame.Gradient,
+			TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 0),
+			{ Offset = Vector2.new(BarChangeRatio, 0) }
+		)
+		StaminaBarGlow.Gradient.Offset = Vector2.new(BarChangeRatio - 1, 0)
+		ColorBarTween.Completed:Connect(function()
+			RedFrameTween:Play()
+			ColorBarTween:Destroy()
+		end)
+
+		RedFrameTween.Completed:Connect(function()
+			resolve()
+			RedFrameTween:Destroy()
+		end)
+	end):andThen(function()
+		StaminaBarPromise = nil
+	end)
 end
 
 function PlayerController:UpdateHealthBar()
 	local HealthBar = self.CoreHUD.Bottom.Stats.HP
+	local HealthBarRedFrame = HealthBar.Bar_Change
+	local HealthBarMain = HealthBarRedFrame.Bar
+	local HealthBarGlow = HealthBar.BarFrame
 	local NewValue = math.floor(((self.Data.Health + self.Data.OverHealth) / self.Data.MaximumHealth) * 100)
-	HealthBar.Value.Text = tostring(NewValue)
+
+	if HealthBarPromise then
+		HealthBarPromise:await()
+	end
+	HealthBarPromise = Promise.new(function(resolve, reject)
+		local BarChangeRatio = (-2 * (NewValue / 100)) + 1
+		local RedFrameTween = TweenService:Create(
+			HealthBarRedFrame.Gradient,
+			TweenInfo.new(0.75, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 0),
+			{ Offset = Vector2.new(BarChangeRatio, 0) }
+		)
+
+		local ColorBarTween = TweenService:Create(
+			HealthBarMain.Gradient,
+			TweenInfo.new(0.74, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0),
+			{ Offset = Vector2.new(BarChangeRatio, 0) }
+		)
+		HealthBarGlow.Gradient.Offset = Vector2.new(BarChangeRatio + 1, 0)
+		ColorBarTween:Play()
+
+		ColorBarTween.Completed:Connect(function()
+			HealthBar.Value.Text = tostring(NewValue)
+			RedFrameTween:Play()
+			ColorBarTween:Destroy()
+		end)
+
+		RedFrameTween.Completed:Connect(function()
+			resolve()
+			RedFrameTween:Destroy()
+		end)
+	end):andThen(function()
+		HealthBarPromise = nil
+	end)
 end
 
 function PlayerController:UpdatePlayersData(comingData)
@@ -144,6 +213,7 @@ function PlayerController:KnitStart()
 	self.PlayerService.SendPlayerData:Connect(function(comingData)
 		self:UpdatePlayersData(comingData)
 	end)
+
 	self:LoadPlayersAnimations()
 end
 
