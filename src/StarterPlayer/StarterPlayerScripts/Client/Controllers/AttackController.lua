@@ -367,6 +367,7 @@ function AttackController:KickAttack()
 					and not self.AttackCon
 					and self.PlayersAttackData.Ragdoll <= 0
 					and not self.PlayersAttackData.Knocked
+					and not self.PlayersAttackData.InSafeZone
 				then
 					self.AttackPower = 0
 					if self.CameraCon then

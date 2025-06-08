@@ -2,10 +2,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local ContentProvider = game:GetService("ContentProvider")
 local TweenService = game:GetService("TweenService")
+local starterGui = game:GetService("StarterGui")
 
 local Assets = ReplicatedStorage:WaitForChild("Shared").Assets
 
 local Knit = require(ReplicatedStorage.Packages.knit)
+local Zoneplus = require(ReplicatedStorage.Packages.zoneplus)
+
 local Promise = require(Knit.Util.Promise)
 --local KickStyleDatas = require(ReplicatedStorage.Shared.configs.KickStyleDatas)
 
@@ -20,6 +23,8 @@ local PlayerController = Knit.CreateController({
 	Data = {
 		KickStyle = "",
 		Aura = "",
+		Coin = 0,
+		WalkSpeed = 50,
 		MaxPower = 100,
 		Health = 100,
 		MaximumHealth = 100,
@@ -27,19 +32,26 @@ local PlayerController = Knit.CreateController({
 		Stamina = 100,
 		MaximumStamina = 100,
 		Rage = 0,
-		Ragdoll = 0,
 		MaximumRage = 100,
-		WalkSpeed = 50,
-		Coin = 0,
-		Debuffes = {},
+		Ragdoll = 0,
 		StylePassive = 0,
 		AuraPassive = 0,
 		FusionPassive = false,
 		Knocked = false,
+		InSafeZone = false,
 		Animations = {},
 		Sounds = {},
+		Debuffes = {},
 	},
 })
+
+function PlayerController:SetCoreHuds()
+	starterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
+	starterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Health, false)
+	starterGui:SetCoreGuiEnabled(Enum.CoreGuiType.EmotesMenu, false)
+	starterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+	starterGui:SetCore("ResetButtonCallback", false)
+end
 
 function PlayerController:UpdateStaminaBar()
 	local StaminaBar = self.CoreHUD.Bottom.Stats.SP
@@ -215,6 +227,8 @@ function PlayerController:KnitStart()
 	end)
 
 	self:LoadPlayersAnimations()
+
+	self:SetCoreHuds()
 end
 
 return PlayerController

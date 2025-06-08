@@ -1,8 +1,9 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
+local Lobby = workspace:WaitForChild("Lobby")
 
 local Knit = require(ReplicatedStorage.Packages.knit)
+local Zoneplus = require(ReplicatedStorage.Packages.zoneplus)
 
 local KickStlyeDatas = require(ReplicatedStorage.Shared.configs.KickStyleDatas)
 local HiglightDatas = require(ReplicatedStorage.Shared.configs.AuraHiglights)
@@ -76,6 +77,9 @@ function PlayerService:Respawn(RespawningPlayer)
 	for debufNames, _ in playerData.Debuffes do
 		self.StatusService:RemoveStatus(RespawningPlayer, debufNames)
 	end
+	RespawningPlayer.Character.HumanoidRootPart:PivotTo(
+		Lobby:FindFirstChild("Points"):FindFirstChild("SafezoneTeleport").CFrame
+	)
 	self:UpdatePlayerData(RespawningPlayer, {
 		Health = playerData.MaximumHealth,
 		Debuffes = {},
@@ -95,6 +99,19 @@ end
 ---------------------------
 
 ---------------Player Data Areas-------------------------------
+
+function PlayerService:PlayerEnteredSafeZone(player)
+	local targetPlayerData = self.PlayerDatas[player.UserId] or nil
+	if not targetPlayerData then
+		warn("Datasi yok bunun")
+		return
+	end
+
+	for debuffName in targetPlayerData.Debuffes do
+		self:RemoveDebuff(player, debuffName)
+	end
+	self:UpdatePlayerData(player, { InSafeZone = true, WalkSpeed = 35 })
+end
 
 function PlayerService:ClearPlayerDatas(player)
 	local TargetPlayerData = self.PlayerDatas[player.UserId]
@@ -177,13 +194,14 @@ function PlayerService:UpdatePlayerData(player, comingData: table)
 		Emerald = 0,
 		StylePassive = 0,
 		AuraPassive = 0,
-		Debuffes = {},
 		FusionPassive = false,
 		Knocked = false,
 		RageActive = false,
+		InSafeZone = false,
+		Debuffes = {},
 		PlayerAnims = {},
 	}
-
+	print(player, "Ilginc")
 	if not self.PlayerDatas[player.UserId] then
 		self.PlayerDatas[player.UserId] = DataSet
 	end
@@ -337,7 +355,7 @@ function PlayerService:PlayerConnections(player)
 				warn("Data yok")
 				return
 			end
-			if math.floor(char.Humanoid.MoveDirection.Magnitude) > 0 then
+			if math.floor(char.Humanoid.MoveDirection.Magnitude) > 0 and not playersTargetData.InSafeZone then
 				if counter > 0 then
 					counter = -1
 				end
@@ -347,7 +365,7 @@ function PlayerService:PlayerConnections(player)
 				if decreasingStamina ~= playersTargetData.Stamina then
 					self:UpdatePlayerData(player, { Stamina = decreasingStamina })
 				end
-			elseif math.floor(char.Humanoid.MoveDirection.Magnitude) <= 0 then
+			elseif math.floor(char.Humanoid.MoveDirection.Magnitude) <= 0 or playersTargetData.InSafeZone then
 				if counter < 0 then
 					counter = 1
 				end
@@ -382,6 +400,39 @@ function PlayerService:PlayerConnections(player)
 		end
 	end)
 end
+
+function PlayerService:SetZones()
+	local SafeZoneConteyner = Lobby:WaitForChild("Zones"):FindFirstChild("SafeZone")
+	local safeZone = Zoneplus.new(SafeZoneConteyner)
+
+	safeZone.playerEntered:Connect(function(player)
+		self:PlayerEnteredSafeZone(player)
+	end)
+
+	safeZone.playerExited:Connect(function(player)
+		self:UpdatePlayerData(player, { InSafeZone = false, WalkSpeed = 25 })
+	end)
+
+	local TeleporterInSafeZoneConteyner = Lobby:WaitForChild("Zones"):FindFirstChild("SafeZoneTeleporter")
+
+	local TeleporterInSafeZone = Zoneplus.new(TeleporterInSafeZoneConteyner)
+
+	TeleporterInSafeZone.playerEntered:Connect(function(player)
+		player.Character.HumanoidRootPart:PivotTo(
+			Lobby:WaitForChild("Points"):FindFirstChild("GameAreaTeleport").CFrame
+		)
+	end)
+
+	local TeleporterInGameAreaConteyner = Lobby:WaitForChild("Zones"):FindFirstChild("InGameTeleporter")
+	local TeleporterInGameArea = Zoneplus.new(TeleporterInGameAreaConteyner)
+
+	TeleporterInGameArea.playerEntered:Connect(function(player)
+		player.Character.HumanoidRootPart:PivotTo(
+			Lobby:WaitForChild("Points"):FindFirstChild("SafezoneTeleport").CFrame
+		)
+	end)
+end
+
 --------------------------------------------------------
 
 function PlayerService:KnitInit()
@@ -393,6 +444,8 @@ function PlayerService:KnitInit()
 end
 
 function PlayerService:KnitStart()
+	print("PlayerServiceStarted")
+	self:SetZones()
 	Players.PlayerAdded:Connect(function(player)
 		player.CharacterAdded:Connect(function(character)
 			self.RagdollService:BuildCollideParts(player)

@@ -7,3 +7,5 @@ realm = "shared"
 [dependencies]
 
 knit = "sleitnick/knit@1.7.0"
+zoneplus = "mattschrubb/zoneplus@3.2.0"
+cmdr = "evaera/cmdr@1.12.0"
