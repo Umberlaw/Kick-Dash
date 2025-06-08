@@ -29,25 +29,31 @@ function AttackService:Attack(player, hittedplayer, otherdatas, ragdollDatas)
 	--self.StatusService:AddStatus(player, "Slowed", { RemainingTime = 10 })
 
 	if type(attackingPlayerDatas.StylePassive) == "boolean" then
-		self.PassiveService:StartStylePassive(player)
+		self.PassiveService:StartStylePassive(
+			player,
+			{ hittingplayer = hittedplayer, otherDatas = otherdatas, ragdollData = ragdollDatas }
+		)
 	end
 	if type(attackingPlayerDatas.AuraPassive) ~= "boolean" then
 		self.PassiveService:AddPassivePoint(player, "Aura", 1)
 	elseif type(attackingPlayerDatas.AuraPassive) == "boolean" and not attackingPlayerDatas.FusionPassive then
 		self.PassiveService:StartAuraPassive(player, { HittedPlayer = hittedplayer, otherDatas = otherdatas })
 	end
-	self.PassiveService:AddPassivePoint(hittedplayer, "Style", 1)
+	self.PassiveService:AddPassivePoint(hittedplayer, "Style", 2)
 	self:GiveAttackBonuses(player)
 	self:GiveHitBonusses(player, hittedplayer, ragdollDatas)
 end
 
-function AttackService:NPCAttack(player, HittedNPC, otherDatas)
+function AttackService:NPCAttack(player, HittedNPC, otherDatas, ragdollDatas)
 	local attackingPlayerDatas = self.PlayerService.PlayerDatas[player.UserId] or nil
 	if not attackingPlayerDatas then
 		warn("Playerin Datasi yok la")
 	end
 	if type(attackingPlayerDatas.StylePassive) == "boolean" then
-		self.PassiveService:StartStylePassive(player)
+		self.PassiveService:StartStylePassive(
+			player,
+			{ hittingplayer = HittedNPC, otherdatas = otherDatas, ragdollData = ragdollDatas }
+		)
 	end
 	if type(attackingPlayerDatas.AuraPassive) ~= "boolean" then
 		self.PassiveService:AddPassivePoint(player, "Aura", 2)
@@ -96,7 +102,11 @@ function AttackService:GiveHitBonusses(hittingplayer, hittedplayer, RagdollDatas
 			end
 		elseif playerDatas.OverHealth <= 0 then
 			self.PlayerService:UpdatePlayerData(hittedplayer, {
-				Health = math.clamp(playerDatas.Health - (playerDatas.MaximumHealth / 2), 0, playerDatas.MaximumHealth),
+				Health = math.clamp(
+					playerDatas.Health - (playerDatas.MaximumHealth / 10),
+					0,
+					playerDatas.MaximumHealth
+				),
 				Stamina = math.clamp(playerDatas.Stamina - 20, 0, playerDatas.MaximumStamina),
 			})
 			local remainingHP = math.clamp(playerDatas.Health - KickDamage, 0, playerDatas.MaximumHealth)

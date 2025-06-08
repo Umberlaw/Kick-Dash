@@ -264,8 +264,8 @@ local KickStyleDatas = {
 			Cosmetic = { Image = "http://www.roblox.com/asset/?id=124897393491726" },
 		},
 
-		Flamefull = {
-			Name = "Flamefull",
+		Flameful = {
+			Name = "Flameful",
 			Stats = { HealthPoint = 7, RagePoint = 3, StaminaPoint = 2 },
 			Chance = 1,
 			Cosmetic = { Image = "http://www.roblox.com/asset/?id=74270017405748" },

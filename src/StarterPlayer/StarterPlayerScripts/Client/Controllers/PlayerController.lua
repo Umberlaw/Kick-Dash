@@ -8,6 +8,7 @@ local Assets = ReplicatedStorage:WaitForChild("Shared").Assets
 
 local Knit = require(ReplicatedStorage.Packages.knit)
 local Zoneplus = require(ReplicatedStorage.Packages.zoneplus)
+local InterfaceTweens = require(ReplicatedStorage.Shared.configs.InterfaceTweens)
 
 local Promise = require(Knit.Util.Promise)
 --local KickStyleDatas = require(ReplicatedStorage.Shared.configs.KickStyleDatas)
@@ -57,35 +58,71 @@ function PlayerController:UpdateStaminaBar()
 	local StaminaBar = self.CoreHUD.Bottom.Stats.SP
 	local StaminaBarRedFrame = StaminaBar.Bar_Change
 	local StaminaBarMain = StaminaBarRedFrame.Bar
-	local StaminaBarGlow = StaminaBar.BarFrame
+	local StaminaBarGlow = StaminaBar.BarChangingFrame
 	local NewValue = math.floor((self.Data.Stamina / self.Data.MaximumStamina) * 100)
-	StaminaBar.Value.Text = tostring(math.floor(NewValue))
 
 	if StaminaBarPromise then
 		StaminaBarPromise:await()
 	end
 	StaminaBarPromise = Promise.new(function(resolve, reject)
-		local BarChangeRatio = (2 * (NewValue / 100)) - 1
-		local ColorBarTween = TweenService:Create(
-			StaminaBarMain.Gradient,
-			TweenInfo.new(0.74, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0),
-			{ Offset = Vector2.new(BarChangeRatio, 0) }
-		)
-		local RedFrameTween = TweenService:Create(
-			StaminaBarRedFrame.Gradient,
-			TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 0),
-			{ Offset = Vector2.new(BarChangeRatio, 0) }
-		)
-		StaminaBarGlow.Gradient.Offset = Vector2.new(BarChangeRatio - 1, 0)
-		ColorBarTween.Completed:Connect(function()
-			RedFrameTween:Play()
-			ColorBarTween:Destroy()
-		end)
+		local percentValue = 1 - (self.Data.Stamina / self.Data.MaximumStamina)
+		local StaminaBarPercent = InterfaceTweens:Lerp(0.4, -0.6, percentValue)
+		local StaminaBarRedPercent = InterfaceTweens:Lerp(0.4, -0.6, percentValue)
+		local StaminaBarGlowPercent = InterfaceTweens:Lerp(0, 1, percentValue)
 
-		RedFrameTween.Completed:Connect(function()
-			resolve()
-			RedFrameTween:Destroy()
+		local StaminaBarTween =
+			InterfaceTweens:HealthBarUpdate(StaminaBarMain.UIGradient, { Offset = Vector2.new(StaminaBarPercent, 0) })
+		local StaminaBarGlowTween = InterfaceTweens:HealthBarGlowUpdate(
+			StaminaBarGlow.UIGradient,
+			{ Offset = Vector2.new(StaminaBarGlowPercent, 0) }
+		)
+		local StaminaBarRedFrameTween = InterfaceTweens:HealthBarRedUpdate(
+			StaminaBarRedFrame.UIGradient,
+			{ Offset = Vector2.new(StaminaBarRedPercent, 0) }
+		)
+		task.spawn(function() --StaminaValueAnims
+			local FadeInTween, UIFadeinTween, GrowTween, ShrinkTween, FadeOutTween, StrokeFadeOutTween, ResetTween =
+				InterfaceTweens:FadeInOut(StaminaBar.ValueBox.Value, {})
+
+			if UIFadeinTween then
+				UIFadeinTween:Play()
+			end
+
+			FadeInTween:Play()
+			FadeInTween.Completed:Connect(function()
+				StaminaBar.ValueBox.Value.Text = tostring(NewValue)
+				FadeInTween:Destroy()
+				GrowTween:Play()
+			end)
+			GrowTween.Completed:Connect(function()
+				ShrinkTween:Play()
+				GrowTween:Destroy()
+			end)
+			ShrinkTween.Completed:Connect(function()
+				if StrokeFadeOutTween then
+					StrokeFadeOutTween:Play()
+				end
+				FadeOutTween:Play()
+				ShrinkTween:Destroy()
+			end)
+			FadeOutTween.Completed:Connect(function()
+				ResetTween:Play()
+				FadeOutTween:Destroy()
+			end)
+			ResetTween.Completed:Connect(function()
+				ResetTween:Destroy()
+			end)
 		end)
+		StaminaBar.ValueBox.Value.Text = tostring(math.floor(NewValue))
+
+		StaminaBarTween:Play()
+		StaminaBarGlowTween:Play()
+
+		StaminaBarTween.Completed:Wait()
+		StaminaBarRedFrameTween:Play()
+
+		StaminaBarRedFrameTween.Completed:Wait()
+		resolve()
 	end):andThen(function()
 		StaminaBarPromise = nil
 	end)
@@ -95,39 +132,73 @@ function PlayerController:UpdateHealthBar()
 	local HealthBar = self.CoreHUD.Bottom.Stats.HP
 	local HealthBarRedFrame = HealthBar.Bar_Change
 	local HealthBarMain = HealthBarRedFrame.Bar
-	local HealthBarGlow = HealthBar.BarFrame
-	local NewValue = math.floor(((self.Data.Health + self.Data.OverHealth) / self.Data.MaximumHealth) * 100)
+	local HealthBarGlow = HealthBar.BarChangingFrame
 
 	if HealthBarPromise then
 		HealthBarPromise:await()
 	end
 	HealthBarPromise = Promise.new(function(resolve, reject)
-		local BarChangeRatio = (-2 * (NewValue / 100)) + 1
-		local RedFrameTween = TweenService:Create(
-			HealthBarRedFrame.Gradient,
-			TweenInfo.new(0.75, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 0),
-			{ Offset = Vector2.new(BarChangeRatio, 0) }
-		)
+		local percentValue = 1 - (self.Data.Health / self.Data.MaximumHealth)
+		local HealthBarPercent = InterfaceTweens:Lerp(-0.4, 0.6, percentValue)
+		local HealthBarRedPercent = InterfaceTweens:Lerp(-0.4, 0.6, percentValue)
+		local HealthBarGlowPercent = InterfaceTweens:Lerp(0, 1, percentValue)
+		local NewValue = math.floor(((self.Data.Health + self.Data.OverHealth) / self.Data.MaximumHealth) * 100)
 
-		local ColorBarTween = TweenService:Create(
-			HealthBarMain.Gradient,
-			TweenInfo.new(0.74, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0),
-			{ Offset = Vector2.new(BarChangeRatio, 0) }
+		local HealthBarTween =
+			InterfaceTweens:HealthBarUpdate(HealthBarMain.UIGradient, { Offset = Vector2.new(HealthBarPercent, 0) })
+		local HealthBarGlowTween = InterfaceTweens:HealthBarGlowUpdate(
+			HealthBarGlow.UIGradient,
+			{ Offset = Vector2.new(HealthBarGlowPercent, 0) }
 		)
-		HealthBarGlow.Gradient.Offset = Vector2.new(BarChangeRatio + 1, 0)
-		ColorBarTween:Play()
+		local HealthBarRedTween = InterfaceTweens:HealthBarRedUpdate(
+			HealthBarRedFrame.UIGradient,
+			{ Offset = Vector2.new(HealthBarRedPercent, 0) }
+		)
+		task.spawn(function() --HealthBarAnims
+			local FadeInTween, UIFadeinTween, GrowTween, ShrinkTween, FadeOutTween, StrokeFadeOutTween, ResetTween =
+				InterfaceTweens:FadeInOut(HealthBar.Value, {})
 
-		ColorBarTween.Completed:Connect(function()
-			HealthBar.Value.Text = tostring(NewValue)
-			RedFrameTween:Play()
-			ColorBarTween:Destroy()
+			if UIFadeinTween then
+				UIFadeinTween:Play()
+			end
+
+			FadeInTween:Play()
+			FadeInTween.Completed:Connect(function()
+				HealthBar.Value.Text = tostring(NewValue)
+				FadeInTween:Destroy()
+				GrowTween:Play()
+			end)
+			GrowTween.Completed:Connect(function()
+				ShrinkTween:Play()
+				GrowTween:Destroy()
+			end)
+			ShrinkTween.Completed:Connect(function()
+				if StrokeFadeOutTween then
+					StrokeFadeOutTween:Play()
+				end
+				FadeOutTween:Play()
+				ShrinkTween:Destroy()
+			end)
+			FadeOutTween.Completed:Connect(function()
+				ResetTween:Play()
+				FadeOutTween:Destroy()
+			end)
+			ResetTween.Completed:Connect(function()
+				ResetTween:Destroy()
+			end)
 		end)
 
-		RedFrameTween.Completed:Connect(function()
-			resolve()
-			RedFrameTween:Destroy()
-		end)
+		HealthBarTween:Play()
+		HealthBarGlowTween:Play()
+
+		HealthBarTween.Completed:Wait()
+		HealthBarRedTween:Play()
+
+		HealthBarRedTween.Completed:Wait()
+		resolve()
 	end):andThen(function()
+		print("oYnadik Bitti kral")
+
 		HealthBarPromise = nil
 	end)
 end
@@ -138,12 +209,16 @@ function PlayerController:UpdatePlayersData(comingData)
 			if keys == "KickStyle" and self.Data[keys] ~= newDatas then
 				self:UpdatePlayersAnimations(newDatas)
 			end
-			self.Data[keys] = newDatas
-			if keys == "Stamina" then
-				self:UpdateStaminaBar()
+			if self.Data[keys] ~= newDatas then
+				self.Data[keys] = newDatas
+			elseif self.Data[keys] == newDatas then
+				continue
 			end
 			if keys == "Health" or keys == "OverHealth" then
 				self:UpdateHealthBar()
+			end
+			if keys == "Stamina" then
+				self:UpdateStaminaBar()
 			end
 		end
 	end

@@ -25,7 +25,7 @@ function PassiveService:StartAuraPassive(player, otherdatas)
 	end
 end
 
-function PassiveService:StartStylePassive(player)
+function PassiveService:StartStylePassive(player, hittingPerson, otherdatas, ragdollDatas)
 	local playersData = self.PlayerService.PlayerDatas[player.UserId]
 	if not playersData then
 		warn("PlayerData yok")
@@ -34,7 +34,7 @@ function PassiveService:StartStylePassive(player)
 	if not TargetStylePassive then
 		warn("Boyle bi Style yokmus kral")
 	else
-		TargetStylePassive:Start(player)
+		TargetStylePassive:Start(player, hittingPerson, otherdatas, ragdollDatas)
 		self.PlayerService:UpdatePlayerData(player, { StylePassive = 0 })
 		self.Client.PassiveActivate:Fire(player, "Style", 0)
 		self.EffectService:RemoveIndicator(player, "Style")

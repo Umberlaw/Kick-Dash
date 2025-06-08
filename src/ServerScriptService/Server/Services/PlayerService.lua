@@ -201,7 +201,6 @@ function PlayerService:UpdatePlayerData(player, comingData: table)
 		Debuffes = {},
 		PlayerAnims = {},
 	}
-	print(player, "Ilginc")
 	if not self.PlayerDatas[player.UserId] then
 		self.PlayerDatas[player.UserId] = DataSet
 	end
@@ -223,7 +222,6 @@ function PlayerService:UpdatePlayerData(player, comingData: table)
 		OutlineTransparency = 0,
 		DepthMode = Enum.HighlightDepthMode.Occluded,
 	}
-
 	for PropertyName, Value in HiglightDatas[self.PlayerDatas[player.UserId].Aura] do
 		if AuraTable[PropertyName] then
 			AuraHiglight[PropertyName] = Value
@@ -359,9 +357,11 @@ function PlayerService:PlayerConnections(player)
 				if counter > 0 then
 					counter = -1
 				end
-				local decreasingStamina =
-					math.clamp(playersTargetData.Stamina + counter, 0, playersTargetData.MaximumStamina)
-				counter = math.clamp(counter - 1, -10, 1)
+				local decreasingStamina = math.clamp(
+					playersTargetData.Stamina - (playersTargetData.MaximumStamina * 0.01),
+					0,
+					playersTargetData.MaximumStamina
+				)
 				if decreasingStamina ~= playersTargetData.Stamina then
 					self:UpdatePlayerData(player, { Stamina = decreasingStamina })
 				end

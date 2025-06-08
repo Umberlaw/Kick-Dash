@@ -1,20 +1,21 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Kick = {}
+local Flameful = {}
 local Knit = require(ReplicatedStorage.Packages.knit)
 local Promise = require(Knit.Util.Promise)
 
-Kick.Services = {}
+Flameful.Services = {}
 
-function Kick:StartRelease(player)
+function Flameful:StartRelease(player)
 	print(player.Name, "ReleasedThe Mouse")
 end
 
-function Kick:Start(player, otherdatas)
+function Flameful:Start(player, otherdatas)
+	print(otherdatas)
 	self.Services["PlayerService"] = self.Services["PlayerService"] or Knit.GetService("PlayerService")
 	self.Services["StatusService"] = self.Services["StatusService"] or Knit.GetService("StatusService")
 	self.Services["EffectService"] = self.Services["EffectService"] or Knit.GetService("EffectService")
-	print(player.Name, " Kick Passifi tetikledi", "50 can overhealth olarak eklenecek")
-	self.Services["StatusService"]:ActivateDebuff(player, "OverHealth", 100)
+
+	self.Services["StatusService"]:AddStatus(otherdatas.HittedPlayer, "Burned", { RemainingTime = 10 })
 end
 
-return Kick
+return Flameful
