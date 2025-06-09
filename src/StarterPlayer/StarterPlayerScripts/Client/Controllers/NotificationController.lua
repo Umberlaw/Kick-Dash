@@ -9,12 +9,158 @@ local NotificationFrame = PlayerGui:WaitForChild("CoreHUD"):WaitForChild("Left")
 local InterfaceTweens = require(ReplicatedStorage.Shared.configs.InterfaceTweens)
 local Knit = require(ReplicatedStorage.Packages.knit)
 local Promise = require(Knit.Util.Promise)
+local KickStyleDatas = require(ReplicatedStorage.Shared.configs.KickStyleDatas)
 
 local NotificationController = Knit.CreateController({
 	Name = "NotificationController",
 })
 
 function NotificationController:CreateIndicator(infodetails)
+	local function KickHit(Template)
+		local UIScale = Instance.new("UIScale")
+		local success, LocalPlayersData = self.PlayerController:GetPlayerData():await()
+		if not success then
+			warn("Data yok NotificationIcin")
+			return
+		end
+		UIScale.Scale = 0
+		UIScale.Parent = Template.Parent
+		Template.Parent.AnchorPoint = Vector2.new(0.5, 0.5)
+
+		local comingPlayer = infodetails.HittedPlayer or nil
+		local comingChar = if comingPlayer then comingPlayer.Character else nil
+		local destroyingChar = Template.ViewportFrame.WorldModel.TemplateChar
+		if destroyingChar and comingChar then
+			comingChar.Archivable = true
+			local clone = comingChar:Clone()
+			comingChar.Archivable = false
+			for _, allparts in clone:GetDescendants() do
+				if
+					allparts:IsA("Script")
+					or allparts:IsA("ModuleScript")
+					or allparts:IsA("LocalScript")
+					or allparts:IsA("BillboardGui")
+				then
+					allparts:Destroy()
+				end
+			end
+			clone.Humanoid.PlatformStand = true
+			clone:PivotTo(destroyingChar:GetPivot())
+			destroyingChar:Destroy()
+			clone.Parent = Template.ViewportFrame.WorldModel
+		end
+		local KickSymbol = KickStyleDatas.Kicks[LocalPlayersData.KickStyle].Cosmetic.Image or nil
+		if KickSymbol then
+			Template.Icon.Image = KickSymbol
+		end
+		Template.HP.Text = "-" .. tostring(infodetails.GivingDamage)
+		Template.SP.Text = "+" .. tostring(infodetails.ComingStamina)
+		if infodetails.ComingCoin then
+			Template.Coins.Text = "+" .. tostring(infodetails.ComingCoin)
+		else
+			Template.Coins.Visible = false
+		end
+
+		local SizeUp, SizeNormal, RotateUp, RotateDown =
+			InterfaceTweens:HitNotificationAppear(Template.Parent, { Scale = 1.15 })
+		SizeUp:Play()
+		RotateUp:Play()
+		RotateUp.Completed:Connect(function()
+			RotateDown:Play()
+			RotateUp:Destroy()
+		end)
+		SizeUp.Completed:Connect(function()
+			SizeNormal:Play()
+			SizeUp:Destroy()
+		end)
+		SizeNormal.Completed:Connect(function()
+			SizeNormal:Destroy()
+			task.delay(math.random(5, 7), function()
+				local diseapperTransparency, Shrink = InterfaceTweens:HitNotificationDisAppear(Template.Parent, {})
+				diseapperTransparency:Play()
+				Shrink:Play()
+				Shrink.Completed:Connect(function()
+					diseapperTransparency:Destroy()
+					Template.Parent:Destroy()
+					Shrink:Destroy()
+				end)
+			end)
+		end)
+		RotateDown.Completed:Connect(function()
+			RotateDown:Destroy()
+		end)
+	end
+
+	local function AuraHit(Template) end
+
+	local function Knockout(Template) end
+
+	local function Wipeout(Template) end
+
+	local function HitTaken(Template)
+		local UIScale = Instance.new("UIScale")
+		UIScale.Scale = 0
+		UIScale.Parent = Template.Parent
+		Template.Parent.AnchorPoint = Vector2.new(0.5, 0.5)
+
+		local comingPlayer = infodetails.HittingPlayer or nil
+		local comingChar = if comingPlayer then comingPlayer.Character else nil
+		local destroyingChar = Template.ViewportFrame.WorldModel.TemplateChar
+		if destroyingChar and comingChar then
+			comingChar.Archivable = true
+			local clone = comingChar:Clone()
+			comingChar.Archivable = false
+			for _, allparts in clone:GetDescendants() do
+				if
+					allparts:IsA("Script")
+					or allparts:IsA("ModuleScript")
+					or allparts:IsA("LocalScript")
+					or allparts:IsA("BillboardGui")
+				then
+					allparts:Destroy()
+				end
+			end
+			clone.Humanoid.PlatformStand = true
+			clone:PivotTo(destroyingChar:GetPivot())
+			destroyingChar:Destroy()
+			clone.Parent = Template.ViewportFrame.WorldModel
+		end
+		local KickSymbol = KickStyleDatas.Kicks[infodetails.HittingPlayerData.KickStyle].Cosmetic.Image or nil
+		if KickSymbol then
+			Template.Reason.Image = KickSymbol
+		end
+		Template.HP.Text = tostring(infodetails.LosingDamage)
+		Template.SP.Text = "-" .. tostring(infodetails.LosingStamina)
+		local SizeUp, SizeNormal, RotateUp, RotateDown =
+			InterfaceTweens:HitNotificationAppear(Template.Parent, { Scale = 1.15 })
+		SizeUp:Play()
+		RotateUp:Play()
+		RotateUp.Completed:Connect(function()
+			RotateDown:Play()
+			RotateUp:Destroy()
+		end)
+		SizeUp.Completed:Connect(function()
+			SizeNormal:Play()
+			SizeUp:Destroy()
+		end)
+		SizeNormal.Completed:Connect(function()
+			SizeNormal:Destroy()
+			task.delay(math.random(3, 5), function()
+				local diseapperTransparency, Shrink = InterfaceTweens:HitNotificationDisAppear(Template.Parent, {})
+				diseapperTransparency:Play()
+				Shrink:Play()
+				Shrink.Completed:Connect(function()
+					diseapperTransparency:Destroy()
+					Template.Parent:Destroy()
+					Shrink:Destroy()
+				end)
+			end)
+		end)
+		RotateDown.Completed:Connect(function()
+			RotateDown:Destroy()
+		end)
+	end
+
 	local KickTemplate = if infodetails.IndicatorType == "KickHit" or infodetails.IndicatorType == "AuraHit"
 		then NotificationFrame.NotificationTemplates.KickHit:Clone()
 		elseif infodetails.IndicatorType == "Knockout" then NotificationFrame.NotificationTemplates.Knockout:Clone()
@@ -27,16 +173,26 @@ function NotificationController:CreateIndicator(infodetails)
 		warn("Kick Template Data didnt find")
 		return
 	end
+
 	KickTemplate.Parent = NotificationFrame.NotificationConteyner
 	KickTemplate.Visible = true
 	KickTemplate.LayoutOrder = #NotificationFrame.NotificationConteyner:GetChildren()
-	task.delay(3, function()
-		KickTemplate:Destroy()
-	end)
+	if infodetails.IndicatorType == "KickHit" then
+		KickHit(KickTemplate:FindFirstChild(KickTemplate.Name))
+	elseif infodetails.IndicatorType == "AuraHit" then
+		AuraHit(KickTemplate:FindFirstChild(KickTemplate.Name))
+	elseif infodetails.IndicatorType == "Knockout" then
+		Knockout(KickTemplate:FindFirstChild(KickTemplate.Name))
+	elseif infodetails.IndicatorType == "Wipeout" then
+		Wipeout(KickTemplate:FindFirstChild(KickTemplate.Name))
+	elseif infodetails.IndicatorType == "HitTaken" then
+		HitTaken(KickTemplate:FindFirstChild(KickTemplate.Name)) --Vurulan kisiye gidiyo
+	end
 end
 
 function NotificationController:KnitInit()
 	self.NotificationService = Knit.GetService("NotificationService")
+	self.PlayerController = Knit.GetController("PlayerController")
 end
 
 function NotificationController:KnitStart()

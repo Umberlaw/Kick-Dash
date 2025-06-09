@@ -40,7 +40,7 @@ function AttackService:Attack(player, hittedplayer, otherdatas, ragdollDatas)
 		self.PassiveService:StartAuraPassive(player, { HittedPlayer = hittedplayer, otherDatas = otherdatas })
 	end
 	self.PassiveService:AddPassivePoint(hittedplayer, "Style", 2)
-	self:GiveAttackBonuses(player)
+	self:GiveAttackBonuses(player, hittedplayer)
 	self:GiveHitBonusses(player, hittedplayer, ragdollDatas)
 end
 
@@ -60,14 +60,14 @@ function AttackService:NPCAttack(player, HittedNPC, otherDatas, ragdollDatas)
 	elseif type(attackingPlayerDatas.AuraPassive) == "boolean" and not attackingPlayerDatas.FusionPassive then
 		self.PassiveService:StartAuraPassive(player, { HittedPlayer = HittedNPC, otherDatas = otherDatas })
 	end
-	self:GiveAttackBonuses(player)
+	--self:GiveAttackBonuses(player, HittedNPC)
 end
 
 function AttackService:StylePassiveRelease(player)
 	self.PassiveService:StartStyleReleasePassive(player)
 end
 
-function AttackService:GiveAttackBonuses(player) -- For HItting playerBonusses mostly +stamina
+function AttackService:GiveAttackBonuses(player, HittedPlayer) -- For HItting playerBonusses mostly +stamina
 	local playerDatas = self.PlayerService.PlayerDatas[player.UserId]
 	if not playerDatas then
 		warn("pLayerin data eksik baba")
@@ -77,7 +77,13 @@ function AttackService:GiveAttackBonuses(player) -- For HItting playerBonusses m
 		player,
 		{ Stamina = math.clamp(playerDatas.Stamina + 20, 0, playerDatas.MaximumStamina) }
 	)
-	self.NotificationService:CreateLeftInfo(player, { IndicatorType = "KickHit" })
+	local KickDamage = if KickStyleDatas.Kicks[playerDatas.KickStyle]
+		then KickStyleDatas.Kicks[playerDatas.KickStyle].Stats.Damage
+		else nil
+	self.NotificationService:CreateLeftInfo(
+		player,
+		{ IndicatorType = "KickHit", HittedPlayer = HittedPlayer, ComingStamina = 20, GivingDamage = KickDamage }
+	)
 end
 
 function AttackService:GiveHitBonusses(hittingplayer, hittedplayer, RagdollDatas) -- For Beating Player bonusses mostly -stamina and hp
@@ -122,7 +128,13 @@ function AttackService:GiveHitBonusses(hittingplayer, hittedplayer, RagdollDatas
 				)
 				self.RagdollService:RagdollStatus(hittedplayer, true, RagdollDatas)
 
-				self.NotificationService:CreateLeftInfo(hittedplayer, { IndicatorType = "HitTaken" })
+				self.NotificationService:CreateLeftInfo(hittedplayer, {
+					IndicatorType = "HitTaken",
+					HittingPlayer = hittingplayer,
+					LosingDamage = KickDamage,
+					LosingStamina = 20,
+					HittingPlayerData = HittingPlayerDatas,
+				})
 			end
 		end
 	end

@@ -358,7 +358,7 @@ function PlayerService:PlayerConnections(player)
 					counter = -1
 				end
 				local decreasingStamina = math.clamp(
-					playersTargetData.Stamina - (playersTargetData.MaximumStamina * 0.01),
+					playersTargetData.Stamina - (playersTargetData.MaximumStamina * 0.02),
 					0,
 					playersTargetData.MaximumStamina
 				)

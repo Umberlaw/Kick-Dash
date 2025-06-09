@@ -3,6 +3,8 @@ local InterfaceTweens = {}
 
 InterfaceTweens.Tweens = {}
 
+local Details = {}
+
 function InterfaceTweens:Lerp(a, b, t)
 	return a + (b - a) * t
 end
@@ -18,6 +20,45 @@ function InterfaceTweens:HealthBarRedUpdate(element, values: table)
 end
 
 --------------HealthBars-------------------------------
+function InterfaceTweens:HitNotificationAppear(element, values: table)
+	local SizeUpTween = TweenService:Create(
+		element.UIScale,
+		TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0),
+		{ Scale = values.Scale }
+	)
+	local SizeNormalTween = TweenService:Create(
+		element.UIScale,
+		TweenInfo.new(0.225, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0),
+		{ Scale = 1 }
+	)
+
+	local rotateUpTween = TweenService:Create(
+		element:FindFirstChild(element.Name),
+		TweenInfo.new(0.113, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0),
+		{ Rotation = element.Rotation + 18 }
+	)
+	local rotateDownTween = TweenService:Create(
+		element:FindFirstChild(element.Name),
+		TweenInfo.new(0.113, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0),
+		{ Rotation = 0 }
+	)
+	return SizeUpTween, SizeNormalTween, rotateUpTween, rotateDownTween
+end
+
+function InterfaceTweens:HitNotificationDisAppear(element, values: table)
+	local DiseAppearTransparency = TweenService:Create(
+		element,
+		TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 0),
+		{ GroupTransparency = 1 }
+	)
+	local ScaleDown = TweenService:Create(
+		element.UIScale,
+		TweenInfo.new(0.45, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0),
+		{ Scale = 0 }
+	)
+	return DiseAppearTransparency, ScaleDown
+end
+
 -----------PASSIVESSS--------------------------------
 function InterfaceTweens:PassivePopUp(element, values)
 	return TweenService:Create(
@@ -111,5 +152,66 @@ function InterfaceTweens:FadeInOut(element: TextLabel, values: table)
 
 	return FadeInAnim, UIStrokeFadeInAnim, GrowTween, ShrinkTween, FadeOutTween, strokeFadeOutTween, ResetTween
 end
+
+function InterfaceTweens:TextIncrease(element: textLabel, values: table)
+	local popUpScale = 1.15
+	local popDuration = 0.8
+
+	local growTween = TweenService:Create(
+		element,
+		TweenInfo.new(popDuration / 2, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),
+		{
+			Size = UDim2.new(values.OriginalSize.X.Scale * popUpScale, 0, values.OriginalSize.Y.Scale * popUpScale, 0),
+		}
+	)
+
+	local shrinkTween =
+		TweenService:Create(element, TweenInfo.new(popDuration / 2, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+			Size = values.OriginalSize,
+		})
+
+	return growTween, shrinkTween
+end
+
+function InterfaceTweens:TextDecrease(element: TextLabel, values: table)
+	local popDuration = 0.4
+	local PopScale = 0.93
+	--[[if not Details[element] then
+		Details[element] = { times = 0 }
+	end
+	local radiusX = 0.0035
+	local speed = 2 * math.pi / 0.75
+	local radiusY = 0.0025
+	local maxRotation = -2.5
+	print(values)
+	Details[element].times = Details[element].times + values.times * speed
+
+	local offSetX = math.sin(Details[element].times) * radiusX
+	local offSetY = math.cos(Details[element].times) * radiusY
+	element.Position =
+		UDim2.fromScale(values.OriginalPosition.X.Scale + offSetX, values.OriginalPosition.Y.Scale + offSetY)
+
+	local rotationOffset = math.sin(Details[element].times) * maxRotation
+	element.Rotation = values.OriginalRotation + rotationOffset]]
+
+	local GrowTween = TweenService:Create(
+		element,
+		TweenInfo.new(popDuration / 2, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),
+		{
+			Size = UDim2.new(values.OriginalSize.X.Scale * PopScale, 0, values.OriginalSize.Y.Scale * PopScale, 0),
+		}
+	)
+
+	local ShrinkTween =
+		TweenService:Create(element, TweenInfo.new(popDuration / 2, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+			Size = values.OriginalSize,
+		})
+
+	return GrowTween, ShrinkTween
+end
+
+function InterfaceTweens:TextGain(element: TextLabel, values: table) end
+
+function InterfaceTweens:TextLose(element: TextLabel, values: table) end
 
 return InterfaceTweens

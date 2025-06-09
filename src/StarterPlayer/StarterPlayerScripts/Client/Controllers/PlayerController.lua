@@ -18,6 +18,8 @@ local Char = Player.Character or Player.CharacterAdded:Wait()
 local PlayerGui = Player:WaitForChild("PlayerGui")
 local HealthBarPromise = nil
 local StaminaBarPromise = nil
+local OldStamina = 0
+local OldHealth = 0
 
 local PlayerController = Knit.CreateController({
 	Name = "PlayerController",
@@ -64,11 +66,12 @@ function PlayerController:UpdateStaminaBar()
 	if StaminaBarPromise then
 		StaminaBarPromise:await()
 	end
+
 	StaminaBarPromise = Promise.new(function(resolve, reject)
 		local percentValue = 1 - (self.Data.Stamina / self.Data.MaximumStamina)
 		local StaminaBarPercent = InterfaceTweens:Lerp(0.4, -0.6, percentValue)
 		local StaminaBarRedPercent = InterfaceTweens:Lerp(0.4, -0.6, percentValue)
-		local StaminaBarGlowPercent = InterfaceTweens:Lerp(0, 1, percentValue)
+		local StaminaBarGlowPercent = InterfaceTweens:Lerp(0, -1, percentValue)
 
 		local StaminaBarTween =
 			InterfaceTweens:HealthBarUpdate(StaminaBarMain.UIGradient, { Offset = Vector2.new(StaminaBarPercent, 0) })
@@ -81,39 +84,46 @@ function PlayerController:UpdateStaminaBar()
 			{ Offset = Vector2.new(StaminaBarRedPercent, 0) }
 		)
 		task.spawn(function() --StaminaValueAnims
-			local FadeInTween, UIFadeinTween, GrowTween, ShrinkTween, FadeOutTween, StrokeFadeOutTween, ResetTween =
-				InterfaceTweens:FadeInOut(StaminaBar.ValueBox.Value, {})
-
-			if UIFadeinTween then
-				UIFadeinTween:Play()
+			--[[{ PopDuration =0,PopScale = 0,time = 0,speed = 0, OriginalPos = UDim2.new(), OriginalSize = UDim2.new(), OriginalRotation = 0}]]
+			local currentChanginName = if OldStamina
+					and (OldStamina - self.Data.Stamina) < 10
+					and (OldStamina - self.Data.Stamina) >= 0
+				then "TextDecrease"
+				elseif OldStamina and (OldStamina - self.Data.Stamina) >= 10 then "TextLose"
+				elseif
+					OldStamina
+					and (OldStamina - self.Data.Stamina) > -10
+					and (OldStamina - self.Data.Stamina) <= 0
+				then "TextIncrease"
+				elseif
+					OldStamina
+					and (OldStamina - self.Data.Stamina) <= -10
+					and (OldStamina - self.Data.Stamina) <= 0
+				then "TextGain"
+				else nil
+			if not currentChanginName then
+				warn("bu ne la")
 			end
 
-			FadeInTween:Play()
-			FadeInTween.Completed:Connect(function()
-				StaminaBar.ValueBox.Value.Text = tostring(NewValue)
-				FadeInTween:Destroy()
-				GrowTween:Play()
-			end)
-			GrowTween.Completed:Connect(function()
-				ShrinkTween:Play()
-				GrowTween:Destroy()
-			end)
-			ShrinkTween.Completed:Connect(function()
-				if StrokeFadeOutTween then
-					StrokeFadeOutTween:Play()
-				end
-				FadeOutTween:Play()
-				ShrinkTween:Destroy()
-			end)
-			FadeOutTween.Completed:Connect(function()
-				ResetTween:Play()
-				FadeOutTween:Destroy()
-			end)
-			ResetTween.Completed:Connect(function()
-				ResetTween:Destroy()
-			end)
+			local OriginalSize = StaminaBar.Value.Size
+			local OriginalPosition = StaminaBar.Value.Position
+			local OriginalRotation = StaminaBar.Value.Rotation
+
+			local GrowAnim, ShrinkAnim = InterfaceTweens[currentChanginName](self, StaminaBar.Value, {
+				OriginalSize = OriginalSize,
+				OriginalPosition = OriginalPosition,
+				OriginalRotation = OriginalRotation,
+			})
+			if GrowAnim and ShrinkAnim then
+				GrowAnim:Play()
+				GrowAnim.Completed:Wait()
+				GrowAnim:Destroy()
+				ShrinkAnim:Play()
+				ShrinkAnim:Destroy()
+			end
 		end)
-		StaminaBar.ValueBox.Value.Text = tostring(math.floor(NewValue))
+		StaminaBar.Value.Text = tostring(math.floor(NewValue))
+		OldStamina = self.Data.Stamina
 
 		StaminaBarTween:Play()
 		StaminaBarGlowTween:Play()
@@ -154,39 +164,47 @@ function PlayerController:UpdateHealthBar()
 			HealthBarRedFrame.UIGradient,
 			{ Offset = Vector2.new(HealthBarRedPercent, 0) }
 		)
-		task.spawn(function() --HealthBarAnims
-			local FadeInTween, UIFadeinTween, GrowTween, ShrinkTween, FadeOutTween, StrokeFadeOutTween, ResetTween =
-				InterfaceTweens:FadeInOut(HealthBar.Value, {})
-
-			if UIFadeinTween then
-				UIFadeinTween:Play()
+		task.spawn(function() --HealthValueChangings
+			--[[{ PopDuration =0,PopScale = 0,time = 0,speed = 0, OriginalPos = UDim2.new(), OriginalSize = UDim2.new(), OriginalRotation = 0}]]
+			local currentChanginName = if OldHealth
+					and (OldHealth - self.Data.Health) < 10
+					and (OldHealth - self.Data.Health) >= 0
+				then "TextDecrease"
+				elseif OldHealth and (OldHealth - self.Data.Health) >= 10 then "TextLose"
+				elseif
+					OldHealth
+					and (OldHealth - self.Data.Health) > -10
+					and (OldHealth - self.Data.Health) <= 0
+				then "TextIncrease"
+				elseif
+					OldHealth
+					and (OldHealth - self.Data.Health) <= -10
+					and (OldHealth - self.Data.Health) <= 0
+				then "TextGain"
+				else nil
+			if not currentChanginName then
+				warn("bu ne la")
 			end
 
-			FadeInTween:Play()
-			FadeInTween.Completed:Connect(function()
-				HealthBar.Value.Text = tostring(NewValue)
-				FadeInTween:Destroy()
-				GrowTween:Play()
-			end)
-			GrowTween.Completed:Connect(function()
-				ShrinkTween:Play()
-				GrowTween:Destroy()
-			end)
-			ShrinkTween.Completed:Connect(function()
-				if StrokeFadeOutTween then
-					StrokeFadeOutTween:Play()
-				end
-				FadeOutTween:Play()
-				ShrinkTween:Destroy()
-			end)
-			FadeOutTween.Completed:Connect(function()
-				ResetTween:Play()
-				FadeOutTween:Destroy()
-			end)
-			ResetTween.Completed:Connect(function()
-				ResetTween:Destroy()
-			end)
+			local OriginalSize = HealthBar.Value.Size
+			local OriginalPosition = HealthBar.Value.Position
+			local OriginalRotation = HealthBar.Value.Rotation
+
+			local GrowAnim, ShrinkAnim = InterfaceTweens[currentChanginName](self, HealthBar.Value, {
+				OriginalSize = OriginalSize,
+				OriginalPosition = OriginalPosition,
+				OriginalRotation = OriginalRotation,
+			})
+			if GrowAnim and ShrinkAnim then
+				GrowAnim:Play()
+				GrowAnim.Completed:Wait()
+				GrowAnim:Destroy()
+				ShrinkAnim:Play()
+				ShrinkAnim:Destroy()
+			end
 		end)
+		HealthBar.Value.Text = tostring(NewValue)
+		OldHealth = self.Data.Health
 
 		HealthBarTween:Play()
 		HealthBarGlowTween:Play()
