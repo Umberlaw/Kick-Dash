@@ -108,11 +108,7 @@ function AttackService:GiveHitBonusses(hittingplayer, hittedplayer, RagdollDatas
 			end
 		elseif playerDatas.OverHealth <= 0 then
 			self.PlayerService:UpdatePlayerData(hittedplayer, {
-				Health = math.clamp(
-					playerDatas.Health - (playerDatas.MaximumHealth / 10),
-					0,
-					playerDatas.MaximumHealth
-				),
+				Health = math.clamp(playerDatas.Health - (playerDatas.MaximumHealth / 2), 0, playerDatas.MaximumHealth),
 				Stamina = math.clamp(playerDatas.Stamina - 20, 0, playerDatas.MaximumStamina),
 			})
 			local remainingHP = math.clamp(playerDatas.Health - KickDamage, 0, playerDatas.MaximumHealth)

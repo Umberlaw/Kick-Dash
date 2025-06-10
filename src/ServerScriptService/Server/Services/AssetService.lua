@@ -8,6 +8,8 @@ local AssetService = Knit.CreateService({
 	Client = {},
 })
 
+function AssetService:TakeAllSFXS() end
+
 function AssetService:KnitInit() end
 
 function AssetService:KnitStart() end

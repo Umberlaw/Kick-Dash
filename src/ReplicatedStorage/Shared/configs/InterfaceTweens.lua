@@ -158,17 +158,20 @@ function InterfaceTweens:TextIncrease(element: textLabel, values: table)
 	local popDuration = 0.8
 
 	local growTween = TweenService:Create(
-		element,
+		element.UIScale,
 		TweenInfo.new(popDuration / 2, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),
 		{
-			Size = UDim2.new(values.OriginalSize.X.Scale * popUpScale, 0, values.OriginalSize.Y.Scale * popUpScale, 0),
+			Scale = popUpScale,
 		}
 	)
 
-	local shrinkTween =
-		TweenService:Create(element, TweenInfo.new(popDuration / 2, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
-			Size = values.OriginalSize,
-		})
+	local shrinkTween = TweenService:Create(
+		element.UIScale,
+		TweenInfo.new(popDuration / 2, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
+		{
+			Scale = 1,
+		}
+	)
 
 	return growTween, shrinkTween
 end
@@ -195,17 +198,20 @@ function InterfaceTweens:TextDecrease(element: TextLabel, values: table)
 	element.Rotation = values.OriginalRotation + rotationOffset]]
 
 	local GrowTween = TweenService:Create(
-		element,
+		element.UIScale,
 		TweenInfo.new(popDuration / 2, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),
 		{
-			Size = UDim2.new(values.OriginalSize.X.Scale * PopScale, 0, values.OriginalSize.Y.Scale * PopScale, 0),
+			Scale = PopScale,
 		}
 	)
 
-	local ShrinkTween =
-		TweenService:Create(element, TweenInfo.new(popDuration / 2, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
-			Size = values.OriginalSize,
-		})
+	local ShrinkTween = TweenService:Create(
+		element.UIScale,
+		TweenInfo.new(popDuration / 2, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
+		{
+			Scale = 1,
+		}
+	)
 
 	return GrowTween, ShrinkTween
 end

@@ -19,6 +19,7 @@ function PassiveController:SetPassiveIndicators(PassiveType, Count)
 		:FindFirstChild(PassiveType .. "PassiveBar")
 		:FindFirstChild("Points") or nil
 	if passiveIndicatorArea and Count > 0 then
+		self.SoundController:PlaySoundOnlyClient({ SoundName = PassiveType .. "PassivePoint" })
 		for i = 1, Count do
 			local targetIndicator = passiveIndicatorArea:FindFirstChild("Point_" .. tostring(i)) or nil
 			if targetIndicator then
@@ -109,6 +110,7 @@ end
 
 function PassiveController:KnitInit()
 	self.PassiveService = Knit.GetService("PassiveService")
+	self.SoundController = Knit.GetController("SoundController")
 end
 
 function PassiveController:KnitStart()

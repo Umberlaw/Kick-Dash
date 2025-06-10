@@ -60,6 +60,7 @@ function PlayerService:Knocked(knockedPlayer)
 				end)
 			end
 			KnockedPlayerData.PlayerAnims["KnockDown"]:Play()
+			self.SoundService:PlaySound(knockedPlayer, { SoundName = "Knockdown", PlayingArea = "Server" })
 			if not KnockedPlayerData then
 				reject("Datan yok birader")
 			end
@@ -77,6 +78,8 @@ function PlayerService:Respawn(RespawningPlayer)
 	for debufNames, _ in playerData.Debuffes do
 		self.StatusService:RemoveStatus(RespawningPlayer, debufNames)
 	end
+	self.EffectService:RemoveIndicator(RespawningPlayer, "Aura")
+	self.EffectService:RemoveIndicator(RespawningPlayer, "Style")
 	RespawningPlayer.Character.HumanoidRootPart:PivotTo(
 		Lobby:FindFirstChild("Points"):FindFirstChild("SafezoneTeleport").CFrame
 	)
@@ -110,7 +113,7 @@ function PlayerService:PlayerEnteredSafeZone(player)
 	for debuffName in targetPlayerData.Debuffes do
 		self:RemoveDebuff(player, debuffName)
 	end
-	self:UpdatePlayerData(player, { InSafeZone = true, WalkSpeed = 35 })
+	self:UpdatePlayerData(player, { InSafeZone = true, WalkSpeed = 33 })
 end
 
 function PlayerService:ClearPlayerDatas(player)
@@ -239,6 +242,23 @@ function PlayerService:UpdatePlayerData(player, comingData: table)
 		DisplayName.Kick.FontFace =
 			FontDatas[KickStlyeDatas.Kicks[self.PlayerDatas[player.UserId].KickStyle].Cosmetic.Font]
 		DisplayName.Kick:ClearAllChildren()
+		local AuraSoundsFolder = ReplicatedStorage.Shared.Assets.SFX.Auras:FindFirstChild(comingData.Aura)
+		local KickSoundsFolder = ReplicatedStorage.Shared.Assets.SFX.KickStyles:FindFirstChild(comingData.KickStyle)
+		if AuraSoundsFolder then
+			for _, AuraSounds in AuraSoundsFolder:GetChildren() do
+				self.SoundService:CreateSound(player, { SoundObject = AuraSounds, SoundName = AuraSounds.Name })
+			end
+		end
+		if KickSoundsFolder then
+			for _, KickSounds in KickSoundsFolder:GetChildren() do
+				local RemainingName = KickSounds.Name:gsub("^" .. KickSoundsFolder.Name, "")
+				print(RemainingName)
+				self.SoundService:CreateSound(
+					player,
+					{ SoundObject = KickSounds, SoundName = "KickStyle" .. RemainingName }
+				)
+			end
+		end
 		local targetGradientFolder =
 			ReplicatedStorage.Shared.Assets.Gradients.DisplayName:FindFirstChild(self.PlayerDatas[player.UserId].Aura)
 		for _, allDecorations in targetGradientFolder:GetChildren() do
@@ -282,6 +302,15 @@ function PlayerService:LoadPlayersData(player)
 			print(err, "Basarili deildostum")
 		end)
 end
+
+function PlayerService:LoadPlayersSounds(player)
+	local CommonFolder = ReplicatedStorage.Shared.Assets.SFX.Common
+
+	for _, allCommonSounds in CommonFolder:GetChildren() do
+		self.SoundService:CreateSound(player, { SoundObject = allCommonSounds, SoundName = allCommonSounds.Name })
+	end
+end
+
 ------------------------------------------------
 
 ---------------Player Visual Areas---------------------------------
@@ -328,6 +357,12 @@ function PlayerService:SetPlayerDependicies(char)
 		local DebuffIndicators = Instance.new("Folder")
 		DebuffIndicators.Name = "DebuffIndicators"
 		DebuffIndicators.Parent = char
+	end
+
+	if not char.Head:FindFirstChild("Sounds") then
+		local SoundsFolder = Instance.new("Folder")
+		SoundsFolder.Parent = char.Head
+		SoundsFolder.Name = "Sounds"
 	end
 end
 
@@ -393,7 +428,7 @@ function PlayerService:PlayerConnections(player)
 				end
 			elseif targetPlayerData.Stamina > 0 then
 				if targetPlayerData.WalkSpeed == 16 then
-					self:UpdatePlayerData(player, { WalkSpeed = 22 })
+					self:UpdatePlayerData(player, { WalkSpeed = 25 })
 				end
 			end
 			char.Humanoid.WalkSpeed = targetPlayerData.WalkSpeed
@@ -433,6 +468,27 @@ function PlayerService:SetZones()
 	end)
 end
 
+function PlayerService:SetCharClone(player)
+	if ReplicatedStorage.Shared.Assets.Models:FindFirstChild("CharacterClones"):FindFirstChild(player.Name) then
+		ReplicatedStorage.Shared.Assets.Models:FindFirstChild("CharacterClones"):FindFirstChild(player.Name):Destroy()
+	end
+	local char = player.Character or nil
+	char.Archivable = true
+	local clonnedChar = char:Clone()
+	for _, allScriptsandGuis in clonnedChar:GetChildren() do
+		if
+			allScriptsandGuis:IsA("Script")
+			or allScriptsandGuis:IsA("LocalScript")
+			or allScriptsandGuis:IsA("ModuleScript")
+			or allScriptsandGuis:IsA("BillboardGui")
+		then
+			allScriptsandGuis:Destroy()
+		end
+	end
+	clonnedChar.Parent = ReplicatedStorage.Shared.Assets.Models:FindFirstChild("CharacterClones")
+	clonnedChar.Name = player.Name
+end
+
 --------------------------------------------------------
 
 function PlayerService:KnitInit()
@@ -441,6 +497,7 @@ function PlayerService:KnitInit()
 	self.StatusService = Knit.GetService("StatusService")
 	self.EffectService = Knit.GetService("EffectService")
 	self.PassiveService = Knit.GetService("PassiveService")
+	self.SoundService = Knit.GetService("SoundService")
 end
 
 function PlayerService:KnitStart()
@@ -455,6 +512,8 @@ function PlayerService:KnitStart()
 		self.DataService:LoadPlayersData(player)
 		self:LoadPlayersData(player)
 		self:PlayerConnections(player)
+		self:SetCharClone(player)
+		self:LoadPlayersSounds(player)
 	end)
 	Players.PlayerRemoving:Connect(function(player)
 		self:ClearPlayerDatas(player)

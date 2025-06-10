@@ -68,7 +68,8 @@ function AttackController:Dash(dashpower: number)
 	DashVectorForce.RelativeTo = Enum.ActuatorRelativeTo.World
 	DashVectorForce.ApplyAtCenterOfMass = true
 	DashVectorForce.Parent = Char.HumanoidRootPart
-
+	self.SoundController:PlaySoundOnlyClient({ SoundName = "Dash" })
+	print("Ses oynamaliydi")
 	local function GoingDistance()
 		return (2 * (1 + (16 * (dashpower / 100))) * Char.HumanoidRootPart.AssemblyMass) / (0.2 ^ 2)
 	end
@@ -82,6 +83,7 @@ function AttackController:Dash(dashpower: number)
 		DashVectorForce:Destroy()
 		self.DashCon:Disconnect()
 		self.DashCon = nil
+		self.SoundController:CloseTheSound("Dash")
 	end)
 end
 
@@ -110,12 +112,23 @@ function AttackController:StartKickAttack(atackpower)
 			self.HiglightStatus = "Default"
 			self:SetHiglight(0)
 		end
+		self.SoundController:CloseTheSound("Equip")
+		self.SoundController:CloseTheSound("ChargeStart")
+		self.SoundController:CloseTheSound("ChargeUp")
 		if self.AttackCon then
 			self.AttackCon:Disconnect()
 			self:FixCamera()
 			self.AttackCon = nil
 			self.AttackPower = 0
 		end
+		self.SoundController:PlaySoundOnlyClient({ SoundName = "ChargeRelease" })
+		if
+			atackpower / self.PlayersAttackData.MaxPower
+			>= KickStyleDatas.Kicks[self.PlayersAttackData.KickStyle].Stats.RagdollPercent
+		then
+			self.SoundController:PlaySoundOnlyClient({ SoundName = "CrackSound" })
+		end
+
 		self.PlayersAttackData.Animations.Prepare:Stop()
 		self.AnimationConnections["Prepare"]:Disconnect()
 		self.AnimationConnections["Locking"]:Disconnect()
@@ -129,6 +142,8 @@ function AttackController:StartKickAttack(atackpower)
 		self.AnimationConnections["AttackRelease"] = self.PlayersAttackData.Animations.Attack
 			:GetMarkerReachedSignal("AttackRelease")
 			:Connect(function()
+				self.SoundController:PlaySoundOnlyClient({ SoundName = "Kick" })
+
 				local TargetData = KickStyleDatas.Kicks[self.PlayersAttackData.KickStyle]
 				if TargetData then
 					for _, AllHitboxes in TargetData.HitboxTarget do
@@ -171,6 +186,11 @@ function AttackController:StartKickAttack(atackpower)
 										self.ProtectSelfRagdoll = true
 										self.RagdollController:NPCRagdoll(allTouchingitems.Parent, KnockBackDatas) -- Burayada saldiri hasar rage pasif ssitemleri eklenecek
 										self.AttackService.NPCAttack:Fire(allTouchingitems.Parent, { "tEST" })
+										local choosedSoundName = "KickHit" .. tostring(math.random(1, 2))
+										self.SoundController:PlaySoundInServer({
+											SoundName = choosedSoundName,
+											PlayingArea = "Server",
+										})
 									end
 								end
 								task.wait()
@@ -207,6 +227,8 @@ function AttackController:StartKickAttack(atackpower)
 						{ "tEST" },
 						KnockBackDatas
 					)
+					local targetSound = "Fail" .. tostring(math.random(1, 4))
+					self.SoundController:PlaySoundOnlyClient({ SoundName = targetSound })
 				end
 				self.ProtectSelfRagdoll = false
 			end)
@@ -370,6 +392,9 @@ function AttackController:KickAttack()
 					and not self.PlayersAttackData.InSafeZone
 				then
 					self.AttackPower = 0
+					self.SoundController:PlaySoundOnlyClient({ SoundName = "Equip" })
+					self.SoundController:PlaySoundOnlyClient({ SoundName = "ChargeStart" })
+					self.SoundController:PlaySoundOnlyClient({ SoundName = "ChargeUp" })
 					if self.CameraCon then
 						self.CameraCon:Disconnect()
 						self.CameraCon = nil
@@ -513,6 +538,9 @@ function AttackController:KickAttack()
 				self.AttackCon:Disconnect()
 				self.AttackCon = nil
 				self:AimAsistant(false)
+				self.SoundController:CloseTheSound("Equip")
+				self.SoundController:CloseTheSound("ChargeStart")
+				self.SoundController:CloseTheSound("ChargeUp")
 				if self.HiglightStatus ~= "Default" then
 					self.HiglightStatus = "Default"
 					self:SetHiglight(0)

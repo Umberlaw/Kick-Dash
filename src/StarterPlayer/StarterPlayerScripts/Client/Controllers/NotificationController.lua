@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -28,23 +29,29 @@ function NotificationController:CreateIndicator(infodetails)
 		Template.Parent.AnchorPoint = Vector2.new(0.5, 0.5)
 
 		local comingPlayer = infodetails.HittedPlayer or nil
-		local comingChar = if comingPlayer then comingPlayer.Character else nil
 		local destroyingChar = Template.ViewportFrame.WorldModel.TemplateChar
-		if destroyingChar and comingChar then
-			comingChar.Archivable = true
-			local clone = comingChar:Clone()
-			comingChar.Archivable = false
+		local Animation = Instance.new("Animation")
+		Animation.AnimationId = "http://www.roblox.com/asset/?id=180435571"
+
+		if destroyingChar then
+			local clone = ReplicatedStorage.Shared.Assets.Models
+				:FindFirstChild("CharacterClones")
+				:FindFirstChild(comingPlayer.Name)
+				:Clone()
 			for _, allparts in clone:GetDescendants() do
 				if
 					allparts:IsA("Script")
 					or allparts:IsA("ModuleScript")
 					or allparts:IsA("LocalScript")
 					or allparts:IsA("BillboardGui")
+					or allparts:IsA("VectorForce")
 				then
 					allparts:Destroy()
 				end
 			end
+
 			clone.Humanoid.PlatformStand = true
+			clone.PrimaryPart = clone.Head
 			clone:PivotTo(destroyingChar:GetPivot())
 			destroyingChar:Destroy()
 			clone.Parent = Template.ViewportFrame.WorldModel
@@ -104,12 +111,13 @@ function NotificationController:CreateIndicator(infodetails)
 		Template.Parent.AnchorPoint = Vector2.new(0.5, 0.5)
 
 		local comingPlayer = infodetails.HittingPlayer or nil
-		local comingChar = if comingPlayer then comingPlayer.Character else nil
+
 		local destroyingChar = Template.ViewportFrame.WorldModel.TemplateChar
-		if destroyingChar and comingChar then
-			comingChar.Archivable = true
-			local clone = comingChar:Clone()
-			comingChar.Archivable = false
+		if destroyingChar then
+			local clone = ReplicatedStorage.Shared.Assets.Models
+				:FindFirstChild("CharacterClones")
+				:FindFirstChild(comingPlayer.Name)
+				:Clone()
 			for _, allparts in clone:GetDescendants() do
 				if
 					allparts:IsA("Script")
