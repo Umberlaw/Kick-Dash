@@ -54,6 +54,20 @@ function PassiveService:StartStyleReleasePassive(player)
 	end
 end
 
+function PassiveService:StartAuraReleasePassive(player)
+	local playersData = self.PlayerService.PlayerDatas[player.UserId]
+	if not playersData then
+		warn("PlayerData yok")
+	end
+	local TargetStylePassive = Passives[playersData.Aura] or nil
+	if not TargetStylePassive then
+		warn("Boyle bi Style yokmus kral")
+	elseif TargetStylePassive and TargetStylePassive["StartRelease"] then
+		print("START RELEASE DIYE BI FUNCTIONU VARMIS")
+		TargetStylePassive:StartRelease(player)
+	end
+end
+
 function PassiveService:AddPassivePoint(player, PassiveType, IncreaseAmount)
 	if
 		self.PlayerService.PlayerDatas[player.UserId]

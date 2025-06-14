@@ -67,6 +67,10 @@ function AttackService:StylePassiveRelease(player)
 	self.PassiveService:StartStyleReleasePassive(player)
 end
 
+function AttackService:AuraPassiveRelease(player)
+	self.PassiveService:StartAuraReleasePassive(player)
+end
+
 function AttackService:GiveAttackBonuses(player, HittedPlayer) -- For HItting playerBonusses mostly +stamina
 	local playerDatas = self.PlayerService.PlayerDatas[player.UserId]
 	if not playerDatas then
@@ -108,11 +112,12 @@ function AttackService:GiveHitBonusses(hittingplayer, hittedplayer, RagdollDatas
 			end
 		elseif playerDatas.OverHealth <= 0 then
 			self.PlayerService:UpdatePlayerData(hittedplayer, {
-				Health = math.clamp(playerDatas.Health - (playerDatas.MaximumHealth / 2), 0, playerDatas.MaximumHealth),
+				Health = math.clamp(playerDatas.Health - (playerDatas.MaximumHealth / 6), 0, playerDatas.MaximumHealth),
 				Stamina = math.clamp(playerDatas.Stamina - 20, 0, playerDatas.MaximumStamina),
 			})
 			local remainingHP = math.clamp(playerDatas.Health - KickDamage, 0, playerDatas.MaximumHealth)
 			if remainingHP <= 0 then
+				print("Buradan aldin KickHiti", remainingHP, KickDamage, playerDatas.Health)
 				self:Knockout(hittingplayer, hittedplayer)
 			elseif remainingHP > 0 then
 				print(
@@ -170,8 +175,12 @@ function AttackService:KnitStart()
 	self.Client.Attack:Connect(function(player, AttackingPlayer, otherdatas, RagdollDatas)
 		self:Attack(player, AttackingPlayer, otherdatas, RagdollDatas)
 	end)
-	self.Client.PassiveRelease:Connect(function(player)
-		self:StylePassiveRelease(player)
+	self.Client.PassiveRelease:Connect(function(player, ComingPassive)
+		if ComingPassive == "Style" then
+			self:StylePassiveRelease(player)
+		elseif ComingPassive == "Aura" then
+			self:AuraPassiveRelease(player)
+		end
 	end)
 	self.Client.NPCAttack:Connect(function(player, HittedNPC, otherdatas)
 		self:NPCAttack(player, HittedNPC, otherdatas)

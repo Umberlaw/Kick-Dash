@@ -152,7 +152,7 @@ function PlayerController:UpdateHealthBar()
 		local HealthBarPercent = InterfaceTweens:Lerp(-0.4, 0.6, percentValue)
 		local HealthBarRedPercent = InterfaceTweens:Lerp(-0.4, 0.6, percentValue)
 		local HealthBarGlowPercent = InterfaceTweens:Lerp(0, 1, percentValue)
-		local NewValue = math.floor(((self.Data.Health + self.Data.OverHealth) / self.Data.MaximumHealth) * 100)
+		local NewValue = math.floor((self.Data.Health / self.Data.MaximumHealth) * 100)
 
 		local HealthBarTween =
 			InterfaceTweens:HealthBarUpdate(HealthBarMain.UIGradient, { Offset = Vector2.new(HealthBarPercent, 0) })
@@ -222,6 +222,10 @@ function PlayerController:UpdateHealthBar()
 end
 
 function PlayerController:UpdatePlayersData(comingData)
+	if comingData["Health"] then
+		print(comingData, "CHECKLE BAKIM BI BIRAZCIK")
+	end
+
 	for keys, newDatas in comingData do
 		if self.Data[keys] ~= nil then
 			if keys == "KickStyle" and self.Data[keys] ~= newDatas then
@@ -243,6 +247,7 @@ function PlayerController:UpdatePlayersData(comingData)
 end
 
 function PlayerController:UpdatePlayersAnimations(animName)
+	print(animName, "UPDATELENECEK")
 	local TargetKickAnimation = Assets.Animations.KickStyles:FindFirstChild(animName)
 	local TargetPassiveAnims = Assets.Animations.KickPassives:FindFirstChild(animName)
 	local Animator = Char.Humanoid.Animator

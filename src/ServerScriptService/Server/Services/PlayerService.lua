@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Lobby = workspace:WaitForChild("Lobby")
+local Terrain = workspace.Terrain
 
 local Knit = require(ReplicatedStorage.Packages.knit)
 local Zoneplus = require(ReplicatedStorage.Packages.zoneplus)
@@ -378,6 +379,7 @@ end
 function PlayerService:PlayerConnections(player)
 	local char = player.Character
 	local counter = 1
+
 	if not self.PlayerCons[player.UserId] then
 		self.PlayerCons[player.UserId] = {}
 	end
@@ -465,6 +467,16 @@ function PlayerService:SetZones()
 		player.Character.HumanoidRootPart:PivotTo(
 			Lobby:WaitForChild("Points"):FindFirstChild("SafezoneTeleport").CFrame
 		)
+	end)
+
+	local OutArenaZone = workspace:FindFirstChild("WATERHITBOX")
+	local OutGameArea = Zoneplus.new(OutArenaZone)
+	print(OutArenaZone)
+	OutGameArea.playerEntered:Connect(function(player)
+		local targetpart = workspace:FindFirstChild("ReturnPart")
+		if targetpart then
+			player.Character:PivotTo(targetpart.CFrame)
+		end
 	end)
 end
 

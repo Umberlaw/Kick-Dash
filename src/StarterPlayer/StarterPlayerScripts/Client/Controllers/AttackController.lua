@@ -105,8 +105,15 @@ end
 function AttackController:StartKickAttack(atackpower)
 	if not atackpower then
 		warn("not attack power have")
+		self.Attacking = false
+		self.PlayersAttackData.Animations.Prepare:Stop()
 		return
 	end
+	if type(self.PlayersAttackData.AuraPassive) == "boolean" and self.PlayersAttackData.AuraPassive then
+		print("PASSIVE VAR LO")
+		self.AttackService.PassiveRelease:Fire("Aura")
+	end
+
 	if self.PlayersAttackData.Animations.Prepare.IsPlaying then
 		if self.HiglightStatus ~= "Default" then
 			self.HiglightStatus = "Default"
@@ -121,6 +128,7 @@ function AttackController:StartKickAttack(atackpower)
 			self.AttackCon = nil
 			self.AttackPower = 0
 		end
+
 		self.SoundController:PlaySoundOnlyClient({ SoundName = "ChargeRelease" })
 		if
 			atackpower / self.PlayersAttackData.MaxPower
@@ -237,10 +245,12 @@ end
 
 function AttackController:StartKickPassiveAttack(atackpower)
 	if not atackpower then
-		warn("not attack power have")
+		warn("not attack power have in STYLE PASSIVE")
+		self.Attacking = false
+		self.PlayersAttackData.Animations.PreparePassive:Stop()
 		return
 	end
-	self.AttackService.PassiveRelease:Fire() --If game need data will send there
+	self.AttackService.PassiveRelease:Fire("Style") --If game need data will send there
 	if self.PlayersAttackData.Animations.PreparePassive.IsPlaying then
 		if self.HiglightStatus ~= "Default" then
 			self.HiglightStatus = "Default"

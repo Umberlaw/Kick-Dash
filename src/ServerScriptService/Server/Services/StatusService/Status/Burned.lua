@@ -36,8 +36,12 @@ function Burned:Active(player, _, _)
 					self:Remove(player)
 					break
 				elseif remainingBurnedTime > 0 then
-					local RemainingHP =
-						math.clamp(playerData.Health - (playerData.MaximumHealth * 0.01), 0, playerData.MaximumHealth)
+					local RemainingHP = math.clamp(
+						math.floor(playerData.Health - (playerData.MaximumHealth * 0.01)),
+						playerData.MaximumHealth * 0.01,
+						playerData.MaximumHealth
+					)
+					print(RemainingHP, player)
 					self.KnitServices["PlayerService"]:UpdatePlayerData(player, { Health = RemainingHP })
 					self.KnitServices["PlayerService"]:UpdateDebuffData(player, "Burned", { RemainingTime = -1 })
 				end
