@@ -320,6 +320,9 @@ end
 
 ----PLAYER STARTING EVENTS--------------------------
 function PlayerService:SetPlayerDependicies(char)
+	local hum: Humanoid = char.Humanoid
+	local hrp: BasePart = char.HumanoidRootPart
+
 	if not char.HumanoidRootPart:FindFirstChild("KnockBackAttachment") then
 		local KBAttachment = Instance.new("Attachment")
 		KBAttachment.Name = "KnockBackAttachment"
@@ -365,6 +368,8 @@ function PlayerService:SetPlayerDependicies(char)
 		SoundsFolder.Parent = char.Head
 		SoundsFolder.Name = "Sounds"
 	end
+
+	hum:SetStateEnabled(Enum.HumanoidStateType.Swimming, false)
 end
 
 function PlayerService:SetCollisionGroup(character: Model)
@@ -469,9 +474,12 @@ function PlayerService:SetZones()
 		)
 	end)
 
-	local OutArenaZone = workspace:FindFirstChild("WATERHITBOX")
+	local OutArenaZone = {}
+
+	for _, meshparts in workspace:FindFirstChild("Waterhitbox"):GetChildren() do
+		table.insert(OutArenaZone, meshparts)
+	end
 	local OutGameArea = Zoneplus.new(OutArenaZone)
-	print(OutArenaZone)
 	OutGameArea.playerEntered:Connect(function(player)
 		local targetpart = workspace:FindFirstChild("ReturnPart")
 		if targetpart then

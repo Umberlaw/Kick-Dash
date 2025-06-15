@@ -220,4 +220,72 @@ function InterfaceTweens:TextGain(element: TextLabel, values: table) end
 
 function InterfaceTweens:TextLose(element: TextLabel, values: table) end
 
+----------------------------Passives--------------------------
+function InterfaceTweens:SymbolAppearence(element, values: table)
+	local function SizeInfo(value, delay)
+		return TweenInfo.new(value, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, delay)
+	end
+
+	local function BrigthnessInfo(value, delay)
+		return TweenInfo.new(value, Enum.EasingStyle.Sine, Enum.EasingDirection.In, 0, false, delay)
+	end
+
+	local Size1Info = SizeInfo(0.3, 0)
+	local Brightness1Info = BrigthnessInfo(0.25, 0)
+	local SizeUpPhase1 = TweenService:Create(element, Size1Info, { Size = UDim2.new(4.5, 0, 1.8, 0) })
+	local BrightnessPhase1 = TweenService:Create(element, Brightness1Info, { Brightness = 0.5 })
+
+	local Size2Info = SizeInfo(0.25, 0)
+	local Brightness2Info = BrigthnessInfo(0.325, 0)
+	local SizeUpPhase2 = TweenService:Create(element, Size2Info, { Size = UDim2.new(4, 0, 2, 0) })
+	local BrightnessPhase2 = TweenService:Create(element, Brightness2Info, { Brightness = 1 })
+
+	local SizeTweens = {
+		Phase1 = SizeUpPhase1,
+		Phase2 = SizeUpPhase2,
+	}
+
+	local BrightnessTweens = {
+		Phase1 = BrightnessPhase1,
+		Phase2 = BrightnessPhase2,
+	}
+	return SizeTweens, BrightnessTweens
+end
+
+function InterfaceTweens:SymbolDiseappear(element)
+	local function SizeInfo(value, delay)
+		return TweenInfo.new(value, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, delay)
+	end
+
+	local function BrigthnessInfo(value, delay)
+		return TweenInfo.new(value, Enum.EasingStyle.Sine, Enum.EasingDirection.In, 0, false, delay)
+	end
+
+	local Size3Info = SizeInfo(0.5, 0)
+	local Brightness3Info = BrigthnessInfo(0.5, 0)
+	local SizeDownPhase1 = TweenService:Create(element, Size3Info, { Size = UDim2.new(6, 0, 1.25, 0) })
+	local BrightnessPhase1 = TweenService:Create(element, Brightness3Info, { Brightness = 0.3 })
+
+	local Size4Info = SizeInfo(0.325, 0)
+	local Brigthness4Info = BrigthnessInfo(0.5, 0)
+	local SizeDownPhase2 = TweenService:Create(element, Size4Info, { Size = UDim2.new(5, 0, 2.5, 0) })
+	local BrightnessPhase2 = TweenService:Create(element, Brigthness4Info, { Brightness = -10 })
+
+	local Size5Info = SizeInfo(0.5, 0)
+	local SizeDownPhase3 = TweenService:Create(element, Size5Info, { Size = UDim2.new(0, 0, 0, 0) })
+
+	local SizeTweens = {
+		Phase1 = SizeDownPhase1,
+		Phase2 = SizeDownPhase2,
+		Phase3 = SizeDownPhase3,
+	}
+
+	local BrightnessTweens = {
+		Phase1 = BrightnessPhase1,
+		Phase2 = BrightnessPhase2,
+	}
+
+	return SizeTweens, BrightnessTweens
+end
+
 return InterfaceTweens

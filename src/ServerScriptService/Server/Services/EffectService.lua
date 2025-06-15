@@ -3,6 +3,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.knit)
 local Promise = require(Knit.Util.Promise)
 
+local InterfaceTweens = require(ReplicatedStorage.Shared.configs.InterfaceTweens)
+
 local EffectService = Knit.CreateService({
 	Name = "EffectService",
 	Client = {},
@@ -24,16 +26,37 @@ function EffectService:SetIndicator(Player, PassiveType)
 end
 
 function EffectService:RemoveIndicator(Player, PassiveType)
-	local PlayerTargetIndicator = if self.PlayerIndicators[Player.UserId]
-			and self.PlayerIndicators[Player.UserId][PassiveType]
-		then self.PlayerIndicators[Player.UserId][PassiveType]
-		else nil
-	if not PlayerTargetIndicator then
-		warn("Indicator Yokmus Reelde")
-		return
-	end
-	PlayerTargetIndicator:Destroy()
-	self.PlayerIndicators[Player.UserId][PassiveType] = nil
+	Promise.new(function(resolve, reject)
+		local PlayerTargetIndicator = if self.PlayerIndicators[Player.UserId]
+				and self.PlayerIndicators[Player.UserId][PassiveType]
+			then self.PlayerIndicators[Player.UserId][PassiveType]
+			else nil
+		if not PlayerTargetIndicator then
+			reject("Player didnt have anythinm")
+		end
+		local SizeTweens, BrightnesTweens = InterfaceTweens:SymbolDiseappear(PlayerTargetIndicator)
+		task.spawn(function()
+			SizeTweens.Phase1:Play()
+			BrightnesTweens.Phase1:Play()
+			task.delay(0.5, function()
+				SizeTweens.Phase2:Play()
+				BrightnesTweens.Phase2:Play()
+				task.delay(0.35, function()
+					SizeTweens.Phase3:Play()
+				end)
+			end)
+		end)
+		SizeTweens.Phase3.Completed:Once(function()
+			resolve(PlayerTargetIndicator)
+		end)
+	end)
+		:andThen(function(result)
+			result:Destroy()
+			self.PlayerIndicators[Player.UserId][PassiveType] = nil
+		end)
+		:catch(function(err)
+			warn(err)
+		end)
 end
 
 function EffectService:CreateSymbols(player, PassiveType)
@@ -56,10 +79,27 @@ function EffectService:CreateSymbols(player, PassiveType)
 				reject("ClonningAsset  Bulunamadi")
 			else
 				self.PlayerIndicators[player.UserId][PassiveType] = ClonningAsset
+				ClonningAsset.Size = UDim2.new(0, 0, 0, 0)
+				ClonningAsset.Brightness = 0
+				local SizeTweens, BrightnesTweens = InterfaceTweens:SymbolAppearence(ClonningAsset)
+
 				ClonningAsset.Parent = player.Character.SymbolIndicators
 				ClonningAsset.Adornee = player.Character.Head
-				ClonningAsset.StudsOffset = Vector3.new(-0.5, 0, 0)
-				resolve(ClonningAsset)
+				ClonningAsset.StudsOffset = Vector3.new(-0.25, 0, 0)
+				task.spawn(function()
+					SizeTweens.Phase1:Play()
+					BrightnesTweens.Phase1:Play()
+					task.delay(0.3, function()
+						SizeTweens.Phase2:Play()
+						BrightnesTweens.Phase2:Play()
+					end)
+				end)
+				BrightnesTweens.Phase2.Completed.Once(function()
+					ClonningAsset.Brightness = 1
+				end)
+				SizeTweens.Phase2.Completed:Once(function()
+					resolve(ClonningAsset)
+				end)
 			end
 		else
 			reject("Target Data Didnt Found")
