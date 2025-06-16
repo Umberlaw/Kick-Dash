@@ -78,6 +78,7 @@ function PlayerService:Respawn(RespawningPlayer)
 	local playerData = self.PlayerDatas[RespawningPlayer.UserId]
 	for debufNames, _ in playerData.Debuffes do
 		self.StatusService:RemoveStatus(RespawningPlayer, debufNames)
+		self.EffectService:RemoveDebuffIndicator(RespawningPlayer, debufNames)
 	end
 	self.EffectService:RemoveIndicator(RespawningPlayer, "Aura")
 	self.EffectService:RemoveIndicator(RespawningPlayer, "Style")
@@ -150,9 +151,8 @@ end
 
 function PlayerService:RemoveDebuff(player, DebuffName)
 	if self.PlayerDatas[player.UserId].Debuffes[DebuffName] then
-		if self.PlayerDatas[player.UserId].Debuffes[DebuffName].Indicator then
-			--BURAYA  EFEKTSERVICEDEN INDICATOR KALDIRMA EKLENECEK
-			print("Buraya daha eklenecek efekt service")
+		if self.PlayerDatas[player.UserId].Debuffes[DebuffName] then
+			self.EffectService:RemoveDebuffIndicator(player, DebuffName)
 		end
 		self.PlayerDatas[player.UserId].Debuffes[DebuffName] = nil
 	end
@@ -236,6 +236,12 @@ function PlayerService:UpdatePlayerData(player, comingData: table)
 	end
 
 	if comingData.Aura or comingData.KickStyle then
+		if not comingData.Aura then
+			comingData.Aura = self.PlayerDatas[player.UserId].Aura
+		end
+		if not comingData.KickStyle then
+			comingData.KickStyle = self.PlayerDatas[player.UserId].KickStyle
+		end
 		DisplayName.Kick.Text = self.PlayerDatas[player.UserId].Aura
 			.. " "
 			.. KickStlyeDatas.Kicks[self.PlayerDatas[player.UserId].KickStyle].Cosmetic.DisplayName
@@ -344,7 +350,7 @@ function PlayerService:SetPlayerDependicies(char)
 		local DisplayNameClone = ReplicatedStorage.Shared.Assets.Indicators:FindFirstChild("DisplayName"):Clone()
 		DisplayNameClone.Parent = char
 		DisplayNameClone.Adornee = char:FindFirstChild("Head")
-		DisplayNameClone.Kick.Text = "ONLYFIFTEENCHARACTER"
+		DisplayNameClone.Kick.Text = "ONLYTWENTYCHARACTER"
 		DisplayNameClone:FindFirstChild("Name").Text = "PLAYERNAME"
 		DisplayNameClone.AlwaysOnTop = false
 	end
@@ -399,11 +405,7 @@ function PlayerService:PlayerConnections(player)
 				if counter > 0 then
 					counter = -1
 				end
-				local decreasingStamina = math.clamp(
-					playersTargetData.Stamina - (playersTargetData.MaximumStamina * 0.02),
-					0,
-					playersTargetData.MaximumStamina
-				)
+				local decreasingStamina = math.clamp(playersTargetData.Stamina - 1, 0, playersTargetData.MaximumStamina)
 				if decreasingStamina ~= playersTargetData.Stamina then
 					self:UpdatePlayerData(player, { Stamina = decreasingStamina })
 				end
@@ -509,6 +511,19 @@ function PlayerService:SetCharClone(player)
 	clonnedChar.Name = player.Name
 end
 
+function PlayerService:CommandPanel(player)
+	player.Chatted:Connect(function(message)
+		local Command = string.sub(message, 1, 2)
+		if Command == "/K" then
+			local argument = string.sub(message, 4)
+			self.CommandService:UseCommand(player, "KickChange", argument)
+		elseif Command == "/A" then
+			local argument = string.sub(message, 4)
+			self.CommandService:UseCommand(player, "AuraChange", argument)
+		end
+	end)
+end
+
 --------------------------------------------------------
 
 function PlayerService:KnitInit()
@@ -518,6 +533,7 @@ function PlayerService:KnitInit()
 	self.EffectService = Knit.GetService("EffectService")
 	self.PassiveService = Knit.GetService("PassiveService")
 	self.SoundService = Knit.GetService("SoundService")
+	self.CommandService = Knit.GetService("CommandService")
 end
 
 function PlayerService:KnitStart()
@@ -534,6 +550,7 @@ function PlayerService:KnitStart()
 		self:PlayerConnections(player)
 		self:SetCharClone(player)
 		self:LoadPlayersSounds(player)
+		self:CommandPanel(player)
 	end)
 	Players.PlayerRemoving:Connect(function(player)
 		self:ClearPlayerDatas(player)

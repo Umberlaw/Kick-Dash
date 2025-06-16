@@ -9,6 +9,7 @@ local Assets = ReplicatedStorage:WaitForChild("Shared").Assets
 local Knit = require(ReplicatedStorage.Packages.knit)
 local Zoneplus = require(ReplicatedStorage.Packages.zoneplus)
 local InterfaceTweens = require(ReplicatedStorage.Shared.configs.InterfaceTweens)
+local KickStyleDatas = require(ReplicatedStorage.Shared.configs.KickStyleDatas)
 
 local Promise = require(Knit.Util.Promise)
 --local KickStyleDatas = require(ReplicatedStorage.Shared.configs.KickStyleDatas)
@@ -221,6 +222,65 @@ function PlayerController:UpdateHealthBar()
 	end)
 end
 
+function PlayerController:UpdateHUD(AuraName)
+	local BottomHud = PlayerGui.CoreHUD.Bottom
+	local RageArea = BottomHud.Stats.Rage
+	local AuraBar = BottomHud.PassiveRelatives.AuraPassiveBar
+	local StyleBar = BottomHud.PassiveRelatives.StylePassiveBar
+
+	local AuraIcon = if ReplicatedStorage.Shared.Assets.Indicators.AuraSymbols:FindFirstChild(AuraName)
+		then ReplicatedStorage.Shared.Assets.Indicators.AuraSymbols:FindFirstChild(AuraName).AuraPassiveIcon.Image
+		else nil
+	local StyleIcon = if ReplicatedStorage.Shared.Assets.Indicators.KickSymbols:FindFirstChild(self.Data.KickStyle)
+		then ReplicatedStorage.Shared.Assets.Indicators.KickSymbols:FindFirstChild(self.Data.KickStyle).StylePassiveIcon.Image
+		else nil
+
+	local AuraGradient = if ReplicatedStorage.Shared.Assets.Gradients.AuraBased.Defaults:FindFirstChild(AuraName)
+		then ReplicatedStorage.Shared.Assets.Gradients.AuraBased.Defaults:FindFirstChild(AuraName)
+		else nil
+	local function CreateGradient(target)
+		if not AuraGradient then
+			return
+		else
+		end
+		if target:FindFirstChild("GRADIENT") then
+			target:FindFirstChild("GRADIENT"):Destroy()
+		end
+		local newGradient = AuraGradient:Clone()
+		newGradient.Name = "GRADIENT"
+		newGradient.Parent = target
+	end
+
+	AuraBar.IconGroup.AuraIcon.Image = AuraIcon or ""
+	AuraBar.IconGroup.AuraIcon.AuraIcon_Aura.Image = AuraIcon or ""
+	CreateGradient(AuraBar.IconGroup.AuraIcon.AuraIcon_Aura)
+	for _, PointsName in AuraBar.Points:GetChildren() do
+		local AuraParent = PointsName:FindFirstChild("PassivePoint_Aura")
+		if AuraParent then
+			CreateGradient(AuraParent)
+		end
+	end
+	RageArea.RageBar.Icon.Image = if KickStyleDatas.Auras[AuraName]
+		then KickStyleDatas.Auras[AuraName].Cosmetic.Image
+		else ""
+	CreateGradient(RageArea.RageBar.Background_Aura)
+
+	for _, allEffects in RageArea.Bar2:GetChildren() do
+		if not allEffects:IsA("ImageLabel") then
+			continue
+		end
+		CreateGradient(allEffects)
+	end
+
+	StyleBar.IconGroup.StyleIcon.StyleIcon.Image = StyleIcon or ""
+
+	for _, alleffects in BottomHud.Effects:GetChildren() do
+		if string.find(alleffects.Name, "_Aura") then
+			CreateGradient(alleffects)
+		end
+	end
+end
+
 function PlayerController:UpdatePlayersData(comingData)
 	if comingData["Health"] then
 		print(comingData, "CHECKLE BAKIM BI BIRAZCIK")
@@ -230,6 +290,11 @@ function PlayerController:UpdatePlayersData(comingData)
 		if self.Data[keys] ~= nil then
 			if keys == "KickStyle" and self.Data[keys] ~= newDatas then
 				self:UpdatePlayersAnimations(newDatas)
+				self:UpdateHUD("NIL")
+			end
+			if keys == "Aura" and self.Data[keys] ~= newDatas then
+				print("AURA DEGSIECEK", self.Data[keys], newDatas)
+				self:UpdateHUD(newDatas)
 			end
 			if self.Data[keys] ~= newDatas then
 				self.Data[keys] = newDatas
