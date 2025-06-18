@@ -25,6 +25,10 @@ function PassiveService:StartAuraPassive(player, otherdatas)
 	end
 end
 
+function PassiveService:Clear(player)
+	print(player, "Passiveleri temizlendi") --EKLENECEK
+end
+
 function PassiveService:StartStylePassive(player, hittingPerson, otherdatas, ragdollDatas)
 	local playersData = self.PlayerService.PlayerDatas[player.UserId]
 	if not playersData then
@@ -85,8 +89,14 @@ function PassiveService:AddPassivePoint(player, PassiveType, IncreaseAmount)
 		if type(PlayerStylePassive) == "boolean" then
 			print("Kick Passive Active Zaten")
 		elseif PlayerStylePassive then
+			local targetStylePassive = Passives[PlayerStylePassive] or nil
+
 			local newPlayerPassiveProgress = math.clamp(PlayerStylePassive + IncreaseAmount, 0, 3)
 			if newPlayerPassiveProgress >= 3 then
+				if not targetStylePassive then
+					warn("Bu passifin skili yok dolamazsin")
+					return
+				end
 				PlayerKickPassiveProgress = true
 				self.EffectService:CreateSymbols(player, "Style")
 				self.EffectService:SetIndicator(player, "Style")
@@ -100,8 +110,13 @@ function PassiveService:AddPassivePoint(player, PassiveType, IncreaseAmount)
 		if type(PlayerAuraPassive) == "boolean" then
 			print("Aura Pasif Aktif Zaten")
 		elseif PlayerAuraPassive then
+			local targetAuraPassive = Passives[PlayerAuraPassive] or nil
 			local newPlayerPassiveProgress = math.clamp(PlayerAuraPassive + IncreaseAmount, 0, 3)
 			if newPlayerPassiveProgress >= 3 then
+				if not targetAuraPassive then
+					warn("Bu Aura passifin skili yok dolamazsin")
+					return
+				end
 				PlayerAuraPassiveProgress = true
 				self.EffectService:CreateSymbols(player, "Aura")
 				self.EffectService:SetIndicator(player, "Aura")

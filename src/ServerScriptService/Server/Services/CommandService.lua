@@ -23,6 +23,8 @@ function CommandService:UseCommand(player, command, comingData)
 		else
 			warn("Wrong Aura Name")
 		end
+	elseif command == "Health" then
+		self.PlayerService:UpdatePlayerData(player, { Health = tonumber(comingData) })
 	end
 end
 

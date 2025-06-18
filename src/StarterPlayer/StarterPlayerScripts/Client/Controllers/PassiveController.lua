@@ -44,10 +44,12 @@ function PassiveController:SetPassiveIndicators(PassiveType, Count)
 					)
 					local PopUpAnim =
 						InterFaceTweens:PassivePopUp(targetIndicator, { Size = PopSize, Position = PopPosition })
+					local PopUpScaleUpAnim = InterFaceTweens:PassivePopUpScaleUp(targetIndicator.UIScale)
 					local PopNormalAnim = InterFaceTweens:PassivePopNormal(
 						targetIndicator,
 						{ Size = originalSize, Position = originalPos }
 					)
+					local PopUpScaleNormalAnim = InterFaceTweens:PassivePopUpScaleNormal(targetIndicator.UIScale)
 					local PassivePointVisible = InterFaceTweens:ShowPassiveBubble(targetPont, { ImageTransparency = 0 })
 
 					if IconGroup then
@@ -77,6 +79,7 @@ function PassiveController:SetPassiveIndicators(PassiveType, Count)
 						)
 
 						IconPopUp:Play()
+
 						IconPopUp.Completed:Connect(function()
 							IconNormal:Play()
 							IconPopUp:Destroy()
@@ -87,14 +90,18 @@ function PassiveController:SetPassiveIndicators(PassiveType, Count)
 						IconTrasnparencyTween:Play()
 					end
 					PopUpAnim:Play()
+					PopUpScaleUpAnim:Play()
 
 					PassivePointVisible:Play()
 					PopUpAnim.Completed:Connect(function()
 						PopNormalAnim:Play()
+						PopUpScaleNormalAnim:Play()
 						PopUpAnim:Destroy()
+						PopUpScaleUpAnim:Destroy()
 					end)
 					PopNormalAnim.Completed:Connect(function()
 						PopNormalAnim:Destroy()
+						PopUpScaleNormalAnim:Destroy()
 					end)
 				end
 			end

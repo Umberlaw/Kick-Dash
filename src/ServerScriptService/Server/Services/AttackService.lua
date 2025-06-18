@@ -112,13 +112,13 @@ function AttackService:GiveHitBonusses(hittingplayer, hittedplayer, RagdollDatas
 			end
 		elseif playerDatas.OverHealth <= 0 then
 			self.PlayerService:UpdatePlayerData(hittedplayer, {
-				Health = math.clamp(playerDatas.Health - (playerDatas.MaximumHealth / 6), 0, playerDatas.MaximumHealth),
+				Health = math.clamp(playerDatas.Health - KickDamage, 0, playerDatas.MaximumHealth),
 				Stamina = math.clamp(playerDatas.Stamina - 20, 0, playerDatas.MaximumStamina),
 			})
 			local remainingHP = math.clamp(playerDatas.Health - KickDamage, 0, playerDatas.MaximumHealth)
 			if remainingHP <= 0 then
 				print("Buradan aldin KickHiti", remainingHP, KickDamage, playerDatas.Health)
-				self:Knockout(hittingplayer, hittedplayer)
+				self:Knockout(hittingplayer, hittedplayer, math.floor((KickDamage / playerDatas.MaximumHealth) * 100))
 			elseif remainingHP > 0 then
 				print(
 					"BEN BUNA RAGDOLL VERECEGIM",
@@ -141,7 +141,7 @@ function AttackService:GiveHitBonusses(hittingplayer, hittedplayer, RagdollDatas
 	end
 end
 
-function AttackService:Knockout(hittingplayer, KnockedPlayer)
+function AttackService:Knockout(hittingplayer, KnockedPlayer, KickDamage)
 	local hittingPlayerData = self.PlayerService.PlayerDatas[hittingplayer.UserId]
 	local KnockedPlayerData = self.PlayerService.PlayerDatas[KnockedPlayer.UserId]
 	if not hittingPlayerData or not KnockedPlayerData then
@@ -151,9 +151,19 @@ function AttackService:Knockout(hittingplayer, KnockedPlayer)
 	--TO DO  LAST WISH SIDE AND  KNOCKED PHASE AREA WILL ADD THERE
 
 	self.PlayerService:Knocked(KnockedPlayer)
+	self.NotificationService:CreateLeftInfo(hittingplayer, {
+		HittingPlayer = hittingplayer,
+		KnockedPlayer = KnockedPlayer,
+		IndicatorType = "Wipeout",
+		LosingHealth = KickDamage,
+	})
+
+	self.NotificationService:CreateLeftInfo(
+		hittingplayer,
+		{ HittingPlayer = hittingplayer, KnockedPlayer = KnockedPlayer, IndicatorType = "Knockout", ComingCoin = 200 }
+	)
+
 	self.PlayerService:UpdatePlayerData(hittingplayer, { Coin = hittingPlayerData.Coin + 200 })
-	self.NotificationService:CreateLeftInfo(KnockedPlayer, { IndicatorType = "Wipeout" })
-	self.NotificationService:CreateLeftInfo(hittingplayer, { IndicatorType = "Knockout" })
 end
 
 function AttackService:AuraChanings(player, AuraStatus)

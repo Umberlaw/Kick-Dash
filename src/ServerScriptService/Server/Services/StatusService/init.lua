@@ -19,6 +19,13 @@ function StatusService:RemoveStatus(player, StatuName)
 	StatusData[StatuName]:Remove(player)
 end
 
+function StatusService:Clear(player, targetData)
+	for debufNames, _ in targetData.Debuffes do
+		self:RemoveStatus(player, debufNames)
+	end
+	self:RemoveStatus(player, "OverHealth")
+end
+
 function StatusService:AddStatus(player, StatuName, StatusDetails, DebuffName, DebuffType)
 	if not StatusData[StatuName] then
 		warn("Not find any status like that")

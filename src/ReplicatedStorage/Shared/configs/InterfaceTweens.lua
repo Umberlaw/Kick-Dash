@@ -64,7 +64,23 @@ function InterfaceTweens:PassivePopUp(element, values)
 	return TweenService:Create(
 		element,
 		TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0),
-		{ Position = values.Position, Size = values.Size }
+		{ Position = values.Position }
+	)
+end
+
+function InterfaceTweens:PassivePopUpScaleUp(element)
+	return TweenService:Create(
+		element,
+		TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0),
+		{ Scale = 1.2 }
+	)
+end
+
+function InterfaceTweens:PassivePopUpScaleNormal(element)
+	return TweenService:Create(
+		element,
+		TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0),
+		{ Scale = 1 }
 	)
 end
 
@@ -72,7 +88,7 @@ function InterfaceTweens:PassivePopNormal(element, values)
 	return TweenService:Create(
 		element,
 		TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In, 0, false, 0),
-		{ Position = values.Position, Size = values.Size }
+		{ Position = values.Position }
 	)
 end
 

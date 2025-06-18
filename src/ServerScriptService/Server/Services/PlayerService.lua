@@ -76,6 +76,8 @@ end
 
 function PlayerService:Respawn(RespawningPlayer)
 	local playerData = self.PlayerDatas[RespawningPlayer.UserId]
+	local AuraPool = ReplicatedStorage.Shared.Assets.Indicators:FindFirstChild("AuraSymbols"):GetChildren()
+	local StylePool = ReplicatedStorage.Shared.Assets.Indicators:FindFirstChild("KickSymbols"):GetChildren()
 	for debufNames, _ in playerData.Debuffes do
 		self.StatusService:RemoveStatus(RespawningPlayer, debufNames)
 		self.EffectService:RemoveDebuffIndicator(RespawningPlayer, debufNames)
@@ -97,6 +99,8 @@ function PlayerService:Respawn(RespawningPlayer)
 		Knocked = false,
 		RageActive = false,
 		OverHealth = 0,
+		KickStyle = StylePool[math.random(1, #StylePool)].Name,
+		Aura = AuraPool[math.random(1, #AuraPool)].Name,
 	})
 	self.PassiveService:AddPassivePoint(RespawningPlayer, "Aura", 0)
 	self.PassiveService:AddPassivePoint(RespawningPlayer, "Style", 0)
@@ -125,11 +129,20 @@ function PlayerService:ClearPlayerDatas(player)
 		warn("Player didnd have any data whole game WOAAA")
 	end
 
-	for debufNames, _ in TargetPlayerData.Debuffes do
-		self.StatusService:RemoveStatus(player, debufNames)
+	for _, taskes in self.PlayerCons[player.UserId] do
+		task.cancel(taskes)
+		taskes = nil
 	end
-	self.StatusService:RemoveStatus(player, "OverHealth")
+
+	self.DataService:SavePlayersData(player, TargetPlayerData)
 	self.PlayerDatas[player.UserId] = nil
+
+	for _, Services in Knit:GetServices() do
+		if Services["Clear"] then
+			Services["Clear"](self, player, TargetPlayerData)
+			print(Services, "sERVICE temizledi verilerini")
+		end
+	end
 end
 
 function PlayerService:SetKickStats(comingData)
@@ -443,6 +456,15 @@ function PlayerService:PlayerConnections(player)
 			char.Humanoid.WalkSpeed = targetPlayerData.WalkSpeed
 		end
 	end)
+	self.PlayerCons[player.UserId]["AutoSave"] = task.spawn(function()
+		while true do
+			task.wait(5)
+			local targetPlayersData = self.PlayerDatas[player.UserId]
+			if targetPlayersData then
+				self.DataService:UpdatePlayerProfile(player, targetPlayersData)
+			end
+		end
+	end)
 end
 
 function PlayerService:SetZones()
@@ -462,18 +484,14 @@ function PlayerService:SetZones()
 	local TeleporterInSafeZone = Zoneplus.new(TeleporterInSafeZoneConteyner)
 
 	TeleporterInSafeZone.playerEntered:Connect(function(player)
-		player.Character.HumanoidRootPart:PivotTo(
-			Lobby:WaitForChild("Points"):FindFirstChild("GameAreaTeleport").CFrame
-		)
+		player.Character:PivotTo(Lobby:WaitForChild("Points"):FindFirstChild("GameAreaTeleport").CFrame)
 	end)
 
 	local TeleporterInGameAreaConteyner = Lobby:WaitForChild("Zones"):FindFirstChild("InGameTeleporter")
 	local TeleporterInGameArea = Zoneplus.new(TeleporterInGameAreaConteyner)
 
 	TeleporterInGameArea.playerEntered:Connect(function(player)
-		player.Character.HumanoidRootPart:PivotTo(
-			Lobby:WaitForChild("Points"):FindFirstChild("SafezoneTeleport").CFrame
-		)
+		player.Character:PivotTo(Lobby:WaitForChild("Points"):FindFirstChild("SafezoneTeleport").CFrame)
 	end)
 
 	local OutArenaZone = {}
@@ -520,6 +538,9 @@ function PlayerService:CommandPanel(player)
 		elseif Command == "/A" then
 			local argument = string.sub(message, 4)
 			self.CommandService:UseCommand(player, "AuraChange", argument)
+		elseif Command == "/H" then
+			local argument = string.sub(message, 4)
+			self.CommandService:UseCommand(player, "Health", argument)
 		end
 	end)
 end

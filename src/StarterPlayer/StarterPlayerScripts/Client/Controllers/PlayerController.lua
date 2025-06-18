@@ -1,13 +1,13 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local ContentProvider = game:GetService("ContentProvider")
-local TweenService = game:GetService("TweenService")
+--local TweenService = game:GetService("TweenService")
 local starterGui = game:GetService("StarterGui")
 
 local Assets = ReplicatedStorage:WaitForChild("Shared").Assets
 
 local Knit = require(ReplicatedStorage.Packages.knit)
-local Zoneplus = require(ReplicatedStorage.Packages.zoneplus)
+--local Zoneplus = require(ReplicatedStorage.Packages.zoneplus)
 local InterfaceTweens = require(ReplicatedStorage.Shared.configs.InterfaceTweens)
 local KickStyleDatas = require(ReplicatedStorage.Shared.configs.KickStyleDatas)
 
@@ -222,7 +222,7 @@ function PlayerController:UpdateHealthBar()
 	end)
 end
 
-function PlayerController:UpdateHUD(AuraName)
+function PlayerController:UpdateHUD(AuraName, StyleName)
 	local BottomHud = PlayerGui.CoreHUD.Bottom
 	local RageArea = BottomHud.Stats.Rage
 	local AuraBar = BottomHud.PassiveRelatives.AuraPassiveBar
@@ -230,8 +230,15 @@ function PlayerController:UpdateHUD(AuraName)
 
 	local AuraIcon = if ReplicatedStorage.Shared.Assets.Indicators.AuraSymbols:FindFirstChild(AuraName)
 		then ReplicatedStorage.Shared.Assets.Indicators.AuraSymbols:FindFirstChild(AuraName).AuraPassiveIcon.Image
+		elseif
+			ReplicatedStorage.Shared.Assets.Indicators.AuraSymbols:FindFirstChild(self.Data.Aura)
+		then ReplicatedStorage.Shared.Assets.Indicators.AuraSymbols:FindFirstChild(self.Data.Aura).AuraPassiveIcon.Image
 		else nil
-	local StyleIcon = if ReplicatedStorage.Shared.Assets.Indicators.KickSymbols:FindFirstChild(self.Data.KickStyle)
+	local StyleIcon = if StyleName
+			and ReplicatedStorage.Shared.Assets.Indicators.KickSymbols:FindFirstChild(StyleName)
+		then ReplicatedStorage.Shared.Assets.Indicators.KickSymbols:FindFirstChild(StyleName).StylePassiveIcon.Image
+		elseif
+			ReplicatedStorage.Shared.Assets.Indicators.KickSymbols:FindFirstChild(self.Data.KickStyle)
 		then ReplicatedStorage.Shared.Assets.Indicators.KickSymbols:FindFirstChild(self.Data.KickStyle).StylePassiveIcon.Image
 		else nil
 
@@ -241,7 +248,6 @@ function PlayerController:UpdateHUD(AuraName)
 	local function CreateGradient(target)
 		if not AuraGradient then
 			return
-		else
 		end
 		if target:FindFirstChild("GRADIENT") then
 			target:FindFirstChild("GRADIENT"):Destroy()
@@ -290,11 +296,11 @@ function PlayerController:UpdatePlayersData(comingData)
 		if self.Data[keys] ~= nil then
 			if keys == "KickStyle" and self.Data[keys] ~= newDatas then
 				self:UpdatePlayersAnimations(newDatas)
-				self:UpdateHUD("NIL")
+				self:UpdateHUD(self.Data.Aura, newDatas)
 			end
 			if keys == "Aura" and self.Data[keys] ~= newDatas then
 				print("AURA DEGSIECEK", self.Data[keys], newDatas)
-				self:UpdateHUD(newDatas)
+				self:UpdateHUD(newDatas, self.Data.KickStyle)
 			end
 			if self.Data[keys] ~= newDatas then
 				self.Data[keys] = newDatas

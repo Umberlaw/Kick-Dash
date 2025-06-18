@@ -36,6 +36,12 @@ function SoundService:CreateSound(player, soundData: table)
 	self.Client.LoadSounds:Fire(player, self.PlayersSounds[player.UserId])
 end
 
+function SoundService:Clear(player)
+	if self.PlayersSounds[player.UserId] then
+		self.PlayersSounds[player.UserId] = nil
+	end
+end
+
 function SoundService:PlaySound(player, soundData: table)
 	if not self.PlayersSounds[player.UserId] then
 		self.PlayersSounds[player.UserId] = {}

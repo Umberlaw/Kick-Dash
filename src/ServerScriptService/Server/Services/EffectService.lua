@@ -100,6 +100,25 @@ function EffectService:CreateDebuffIndicator(player, IndicatorName, IndicatorTyp
 	end
 end
 
+function EffectService:Clear(player, comingData)
+	print(player, "Efektlerini temizledik")
+	if self.PlayerIndicators[player.UserId] then
+		for indicatorKey, allIndicators in self.PlayerIndicators[player.UserId] do
+			allIndicators:Destroy()
+			self.PlayerIndicators[indicatorKey] = nil
+		end
+	end
+	for debuffName, allDebuffes in comingData.Debuffes do
+		if self.PlayerDebuffes[player.UserId][debuffName] then
+			task.cancel(self.PlayerDebuffes[player.UserId][debuffName]["BillboardTask"])
+			self.PlayerDebuffes[player.UserId][debuffName]["BillboardTask"] = nil
+			self.PlayerDebuffes[player.UserId][debuffName]["Billboard"]:Destroy()
+			self.PlayerDebuffes[player.UserId][debuffName]["Billboard"] = nil
+			self.PlayerDebuffes[player.UserId][debuffName] = nil
+		end
+	end
+end
+
 function EffectService:SetIndicator(Player, PassiveType)
 	local PlayerTargetIndicator = if self.PlayerIndicators[Player.UserId]
 			and self.PlayerIndicators[Player.UserId][PassiveType]

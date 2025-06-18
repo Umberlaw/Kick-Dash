@@ -100,9 +100,127 @@ function NotificationController:CreateIndicator(infodetails)
 
 	local function AuraHit(Template) end
 
-	local function Knockout(Template) end
+	local function Knockout(Template)
+		local UIScale = Instance.new("UIScale")
+		UIScale.Scale = 0
+		UIScale.Parent = Template.Parent
+		Template.Parent.AnchorPoint = Vector2.new(0.5, 0.5)
 
-	local function Wipeout(Template) end
+		local comingPlayer = infodetails.KnockedPlayer or nil
+
+		local destroyingChar = Template.ViewportFrame.WorldModel.TemplateChar
+		if destroyingChar then
+			local clone = ReplicatedStorage.Shared.Assets.Models
+				:FindFirstChild("CharacterClones")
+				:FindFirstChild(comingPlayer.Name)
+				:Clone()
+			for _, allparts in clone:GetDescendants() do
+				if
+					allparts:IsA("Script")
+					or allparts:IsA("ModuleScript")
+					or allparts:IsA("LocalScript")
+					or allparts:IsA("BillboardGui")
+				then
+					allparts:Destroy()
+				end
+			end
+			clone.Humanoid.PlatformStand = true
+			clone:PivotTo(destroyingChar:GetPivot())
+			destroyingChar:Destroy()
+			clone.Parent = Template.ViewportFrame.WorldModel
+		end
+		Template.Playername.Text = infodetails.HittingPlayer.Name
+		Template.Coins.Text = string.upper("+" .. tostring(infodetails.ComingCoin))
+		local SizeUp, SizeNormal, RotateUp, RotateDown =
+			InterfaceTweens:HitNotificationAppear(Template.Parent, { Scale = 1.15 })
+		SizeUp:Play()
+		RotateUp:Play()
+		RotateUp.Completed:Connect(function()
+			RotateDown:Play()
+			RotateUp:Destroy()
+		end)
+		SizeUp.Completed:Connect(function()
+			SizeNormal:Play()
+			SizeUp:Destroy()
+		end)
+		SizeNormal.Completed:Connect(function()
+			SizeNormal:Destroy()
+			task.delay(math.random(3, 5), function()
+				local diseapperTransparency, Shrink = InterfaceTweens:HitNotificationDisAppear(Template.Parent, {})
+				diseapperTransparency:Play()
+				Shrink:Play()
+				Shrink.Completed:Connect(function()
+					diseapperTransparency:Destroy()
+					Template.Parent:Destroy()
+					Shrink:Destroy()
+				end)
+			end)
+		end)
+		RotateDown.Completed:Connect(function()
+			RotateDown:Destroy()
+		end)
+	end
+
+	local function Wipeout(Template)
+		local UIScale = Instance.new("UIScale")
+		UIScale.Scale = 0
+		UIScale.Parent = Template.Parent
+		Template.Parent.AnchorPoint = Vector2.new(0.5, 0.5)
+
+		local comingPlayer = infodetails.HittingPlayer or nil
+
+		local destroyingChar = Template.ViewportFrame.WorldModel.TemplateChar
+		if destroyingChar then
+			local clone = ReplicatedStorage.Shared.Assets.Models
+				:FindFirstChild("CharacterClones")
+				:FindFirstChild(comingPlayer.Name)
+				:Clone()
+			for _, allparts in clone:GetDescendants() do
+				if
+					allparts:IsA("Script")
+					or allparts:IsA("ModuleScript")
+					or allparts:IsA("LocalScript")
+					or allparts:IsA("BillboardGui")
+				then
+					allparts:Destroy()
+				end
+			end
+			clone.Humanoid.PlatformStand = true
+			clone:PivotTo(destroyingChar:GetPivot())
+			destroyingChar:Destroy()
+			clone.Parent = Template.ViewportFrame.WorldModel
+		end
+		Template.HP.Text = tostring(infodetails.LosingHealth)
+		Template.Playername.Text = infodetails.HittingPlayer.Name
+		local SizeUp, SizeNormal, RotateUp, RotateDown =
+			InterfaceTweens:HitNotificationAppear(Template.Parent, { Scale = 1.15 })
+		SizeUp:Play()
+		RotateUp:Play()
+		RotateUp.Completed:Connect(function()
+			RotateDown:Play()
+			RotateUp:Destroy()
+		end)
+		SizeUp.Completed:Connect(function()
+			SizeNormal:Play()
+			SizeUp:Destroy()
+		end)
+		SizeNormal.Completed:Connect(function()
+			SizeNormal:Destroy()
+			task.delay(math.random(3, 5), function()
+				local diseapperTransparency, Shrink = InterfaceTweens:HitNotificationDisAppear(Template.Parent, {})
+				diseapperTransparency:Play()
+				Shrink:Play()
+				Shrink.Completed:Connect(function()
+					diseapperTransparency:Destroy()
+					Template.Parent:Destroy()
+					Shrink:Destroy()
+				end)
+			end)
+		end)
+		RotateDown.Completed:Connect(function()
+			RotateDown:Destroy()
+		end)
+	end
 
 	local function HitTaken(Template)
 		local UIScale = Instance.new("UIScale")

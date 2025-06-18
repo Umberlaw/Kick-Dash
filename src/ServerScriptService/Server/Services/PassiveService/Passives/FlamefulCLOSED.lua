@@ -16,6 +16,8 @@ Flameful.AlreadyTouchedThings = {}
 	end
 end]]
 
+function Flameful:Clear(player) end
+
 function Flameful:Start(player, otherdatas)
 	self.Services["PlayerService"] = self.Services["PlayerService"] or Knit.GetService("PlayerService")
 	self.Services["StatusService"] = self.Services["StatusService"] or Knit.GetService("StatusService")
