@@ -288,10 +288,6 @@ function PlayerController:UpdateHUD(AuraName, StyleName)
 end
 
 function PlayerController:UpdatePlayersData(comingData)
-	if comingData["Health"] then
-		print(comingData, "CHECKLE BAKIM BI BIRAZCIK")
-	end
-
 	for keys, newDatas in comingData do
 		if self.Data[keys] ~= nil then
 			if keys == "KickStyle" and self.Data[keys] ~= newDatas then

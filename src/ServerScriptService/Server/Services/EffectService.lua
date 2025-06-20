@@ -7,7 +7,7 @@ local InterfaceTweens = require(ReplicatedStorage.Shared.configs.InterfaceTweens
 
 local EffectService = Knit.CreateService({
 	Name = "EffectService",
-	Client = {},
+	Client = { SetAtmosphere = Knit.CreateSignal() },
 	PlayerIndicators = {},
 	PlayerDebuffes = {},
 })
@@ -218,6 +218,13 @@ function EffectService:CreateSymbols(player, PassiveType)
 			print(err)
 		end)
 	end)
+end
+
+function EffectService:SetAtmosphere(player, AtmosphereName)
+	local targetAtmosphere = ReplicatedStorage.Shared.Assets.VFX.Atmospheres:FindFirstChild(AtmosphereName)
+	if targetAtmosphere then
+		self.Client.SetAtmosphere:Fire(player, targetAtmosphere)
+	end
 end
 
 function EffectService:KnitInit()

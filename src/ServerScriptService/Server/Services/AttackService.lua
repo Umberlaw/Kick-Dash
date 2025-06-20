@@ -149,7 +149,7 @@ function AttackService:Knockout(hittingplayer, KnockedPlayer, KickDamage)
 		return
 	end
 	--TO DO  LAST WISH SIDE AND  KNOCKED PHASE AREA WILL ADD THERE
-
+	self.RagdollService:RagdollStatus(KnockedPlayer, false, nil)
 	self.PlayerService:Knocked(KnockedPlayer)
 	self.NotificationService:CreateLeftInfo(hittingplayer, {
 		HittingPlayer = hittingplayer,
@@ -159,7 +159,7 @@ function AttackService:Knockout(hittingplayer, KnockedPlayer, KickDamage)
 	})
 
 	self.NotificationService:CreateLeftInfo(
-		hittingplayer,
+		KnockedPlayer,
 		{ HittingPlayer = hittingplayer, KnockedPlayer = KnockedPlayer, IndicatorType = "Knockout", ComingCoin = 200 }
 	)
 

@@ -392,7 +392,6 @@ function PlayerService:SetPlayerDependicies(char)
 end
 
 function PlayerService:SetCollisionGroup(character: Model)
-	workspace:FindFirstChild("Baseplate").CollisionGroup = "World"
 	for _, allparts in character:GetDescendants() do
 		if allparts:IsA("BasePart") then
 			allparts.CollisionGroup = "Players"
@@ -485,6 +484,7 @@ function PlayerService:SetZones()
 
 	TeleporterInSafeZone.playerEntered:Connect(function(player)
 		player.Character:PivotTo(Lobby:WaitForChild("Points"):FindFirstChild("GameAreaTeleport").CFrame)
+		self.EffectService:SetAtmosphere(player, "Arena")
 	end)
 
 	local TeleporterInGameAreaConteyner = Lobby:WaitForChild("Zones"):FindFirstChild("InGameTeleporter")
@@ -492,6 +492,7 @@ function PlayerService:SetZones()
 
 	TeleporterInGameArea.playerEntered:Connect(function(player)
 		player.Character:PivotTo(Lobby:WaitForChild("Points"):FindFirstChild("SafezoneTeleport").CFrame)
+		self.EffectService:SetAtmosphere(player, "Lobby")
 	end)
 
 	local OutArenaZone = {}
