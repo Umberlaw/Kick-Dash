@@ -1,7 +1,9 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Lighting = game:GetService("Lighting")
 
 local Knit = require(ReplicatedStorage.Packages.knit)
+local LightingData = require(ReplicatedStorage.Shared.configs.Lightings)
 --local Promise = require(Knit.Util.Promise)
 
 local EffectController = Knit.CreateController({ Name = "EffectController", CurrentAtmospher = "Lobby" })
@@ -17,11 +19,21 @@ local AtmosphereProperties = {
 	"Haze",
 }
 
-function EffectController:SetAtmosphere(comingatmosphere: Atmosphere)
+function EffectController:SetAtmosphere(comingatmosphere: Atmosphere, AtmosphereType)
 	if comingatmosphere.Name == self.CurrentAtmospher then
 		warn("Zaten Ayni atmosferi istemissin")
 		return
 	end
+
+	local targetLightingData = LightingData[AtmosphereType] or nil
+	if targetLightingData then
+		for propertyName, propertyValue in targetLightingData do
+			if Lighting[propertyName] then
+				Lighting[propertyName] = propertyValue
+			end
+		end
+	end
+
 	local PlayersAtmospher = game.Lighting:FindFirstChild("Atmosphere")
 	if PlayersAtmospher then
 		for _, PropertyName in AtmosphereProperties do
@@ -44,8 +56,8 @@ function EffectController:KnitInit()
 end
 
 function EffectController:KnitStart()
-	self.EffectService.SetAtmosphere:Connect(function(comingatmosphere)
-		self:SetAtmosphere(comingatmosphere)
+	self.EffectService.SetAtmosphere:Connect(function(comingatmosphere, AtmosphereName)
+		self:SetAtmosphere(comingatmosphere, AtmosphereName)
 	end)
 end
 

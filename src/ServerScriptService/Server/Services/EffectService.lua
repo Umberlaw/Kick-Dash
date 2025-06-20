@@ -223,7 +223,7 @@ end
 function EffectService:SetAtmosphere(player, AtmosphereName)
 	local targetAtmosphere = ReplicatedStorage.Shared.Assets.VFX.Atmospheres:FindFirstChild(AtmosphereName)
 	if targetAtmosphere then
-		self.Client.SetAtmosphere:Fire(player, targetAtmosphere)
+		self.Client.SetAtmosphere:Fire(player, targetAtmosphere, AtmosphereName)
 	end
 end
 

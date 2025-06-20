@@ -141,29 +141,78 @@ function AttackService:GiveHitBonusses(hittingplayer, hittedplayer, RagdollDatas
 	end
 end
 
-function AttackService:Knockout(hittingplayer, KnockedPlayer, KickDamage)
-	local hittingPlayerData = self.PlayerService.PlayerDatas[hittingplayer.UserId]
-	local KnockedPlayerData = self.PlayerService.PlayerDatas[KnockedPlayer.UserId]
-	if not hittingPlayerData or not KnockedPlayerData then
-		warn("A data didnt find")
+function AttackService:GiveDamage(DamagingPlayer, comingDamage)
+	local playerDatas = self.PlayerService.PlayerDatas[DamagingPlayer.UserId]
+	if not playerDatas then
 		return
 	end
-	--TO DO  LAST WISH SIDE AND  KNOCKED PHASE AREA WILL ADD THERE
-	self.RagdollService:RagdollStatus(KnockedPlayer, false, nil)
-	self.PlayerService:Knocked(KnockedPlayer)
-	self.NotificationService:CreateLeftInfo(hittingplayer, {
-		HittingPlayer = hittingplayer,
-		KnockedPlayer = KnockedPlayer,
-		IndicatorType = "Wipeout",
-		LosingHealth = KickDamage,
-	})
 
-	self.NotificationService:CreateLeftInfo(
-		KnockedPlayer,
-		{ HittingPlayer = hittingplayer, KnockedPlayer = KnockedPlayer, IndicatorType = "Knockout", ComingCoin = 200 }
-	)
+	if playerDatas.OverHealth ~= 0 then
+		local LeftingOverHealth = math.clamp(playerDatas.OverHealth - comingDamage, 0, 100)
+		if LeftingOverHealth == 0 then
+			self.PlayerService:UpdatePlayerData(DamagingPlayer, {
+				OverHealth = 0,
+			})
+		end
+	elseif playerDatas.OverHealth <= 0 then
+		local remainingHP = math.clamp(playerDatas.Health - comingDamage, 0, playerDatas.MaximumHealth)
+		self.PlayerService:UpdatePlayerData(DamagingPlayer, {
+			Health = math.clamp(playerDatas.Health - comingDamage, 0, playerDatas.MaximumHealth),
+		})
+		if remainingHP <= 0 then
+			print("Buradan aldin KickHiti", remainingHP, comingDamage, playerDatas.Health)
+			self:Knockout(nil, DamagingPlayer, math.floor((comingDamage / playerDatas.MaximumHealth) * 100))
+		elseif remainingHP > 0 then
+			print("BEN BUNA RAGDOLL VERECEGIM", remainingHP, "bu kalan can", playerDatas.Health, "bu da guncel caniydi")
 
-	self.PlayerService:UpdatePlayerData(hittingplayer, { Coin = hittingPlayerData.Coin + 200 })
+			self.NotificationService:CreateLeftInfo(DamagingPlayer, {
+				IndicatorType = "HitTaken",
+				HittingPlayer = DamagingPlayer,
+				LosingDamage = comingDamage,
+				LosingStamina = 20,
+				HittingPlayerData = playerDatas,
+			})
+		end
+	end
+end
+
+function AttackService:Knockout(hittingplayer, KnockedPlayer, KickDamage)
+	if hittingplayer then
+		local hittingPlayerData = self.PlayerService.PlayerDatas[hittingplayer.UserId]
+		local KnockedPlayerData = self.PlayerService.PlayerDatas[KnockedPlayer.UserId]
+		if not hittingPlayerData or not KnockedPlayerData then
+			warn("A data didnt find")
+			return
+		end
+		--TO DO  LAST WISH SIDE AND  KNOCKED PHASE AREA WILL ADD THERE
+		self.RagdollService:RagdollStatus(KnockedPlayer, false, nil)
+		self.PlayerService:Knocked(KnockedPlayer)
+		self.NotificationService:CreateLeftInfo(hittingplayer, {
+			HittingPlayer = hittingplayer,
+			KnockedPlayer = KnockedPlayer,
+			IndicatorType = "Wipeout",
+			LosingHealth = KickDamage,
+		})
+
+		self.NotificationService:CreateLeftInfo(KnockedPlayer, {
+			HittingPlayer = hittingplayer,
+			KnockedPlayer = KnockedPlayer,
+			IndicatorType = "Knockout",
+			ComingCoin = 200,
+		})
+
+		self.PlayerService:UpdatePlayerData(hittingplayer, { Coin = hittingPlayerData.Coin + 200 })
+	elseif not hittingplayer then
+		local KnockedPlayerData = self.PlayerService.PlayerDatas[KnockedPlayer.UserId]
+		self.RagdollService:RagdollStatus(KnockedPlayer, false, nil)
+		self.PlayerService:Knocked(KnockedPlayer)
+		self.NotificationService:CreateLeftInfo(KnockedPlayer, {
+			HittingPlayer = KnockedPlayer,
+			KnockedPlayer = KnockedPlayer,
+			IndicatorType = "Wipeout",
+			LosingHealth = KickDamage,
+		})
+	end
 end
 
 function AttackService:AuraChanings(player, AuraStatus)

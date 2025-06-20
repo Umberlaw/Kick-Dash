@@ -149,7 +149,7 @@ function PlayerService:SetKickStats(comingData)
 	local HealthPoint = (
 		KickStlyeDatas.Kicks[comingData.EquippedKickStyle].Stats.HealthPoint
 		+ KickStlyeDatas.Auras[comingData.EquippedAura].Stats.HealthPoint
-	) * 30
+	) * 50
 	local StaminaPoint = (
 		KickStlyeDatas.Kicks[comingData.EquippedKickStyle].Stats.StaminaPoint
 		+ KickStlyeDatas.Auras[comingData.EquippedAura].Stats.StaminaPoint
@@ -157,7 +157,7 @@ function PlayerService:SetKickStats(comingData)
 	local RagePoint = (
 		KickStlyeDatas.Kicks[comingData.EquippedKickStyle].Stats.RagePoint
 		+ KickStlyeDatas.Auras[comingData.EquippedAura].Stats.RagePoint
-	) * 20
+	) * 30
 
 	return { MaximumHealth = HealthPoint, MaximumStamina = StaminaPoint, MaximumRage = RagePoint }
 end
@@ -505,6 +505,7 @@ function PlayerService:SetZones()
 		local targetpart = workspace:FindFirstChild("ReturnPart")
 		if targetpart then
 			player.Character:PivotTo(targetpart.CFrame)
+			self.AttackService:GiveDamage(player, math.floor(self.PlayerDatas[player.UserId].MaximumHealth / 2))
 		end
 	end)
 end
@@ -556,6 +557,8 @@ function PlayerService:KnitInit()
 	self.PassiveService = Knit.GetService("PassiveService")
 	self.SoundService = Knit.GetService("SoundService")
 	self.CommandService = Knit.GetService("CommandService")
+	self.AttackService = Knit.GetService("AttackService")
+	self.PortalService = Knit.GetService("PortalService")
 end
 
 function PlayerService:KnitStart()
@@ -573,6 +576,7 @@ function PlayerService:KnitStart()
 		self:SetCharClone(player)
 		self:LoadPlayersSounds(player)
 		self:CommandPanel(player)
+		self.PortalService:CreatePortal(player)
 	end)
 	Players.PlayerRemoving:Connect(function(player)
 		self:ClearPlayerDatas(player)

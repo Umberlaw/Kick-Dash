@@ -285,6 +285,41 @@ function PlayerController:UpdateHUD(AuraName, StyleName)
 			CreateGradient(alleffects)
 		end
 	end
+
+	local HPBar = BottomHud.Stats.HP
+	local StaminaBar = BottomHud.Stats.SP
+
+	if KickStyleDatas.Kicks[StyleName] and KickStyleDatas.Auras[AuraName] then
+		local HPtargetPoint = KickStyleDatas.Kicks[StyleName].Stats.HealthPoint
+			+ KickStyleDatas.Auras[AuraName].Stats.HealthPoint
+
+		local SPtargetPoint = KickStyleDatas.Kicks[StyleName].Stats.StaminaPoint
+			+ KickStyleDatas.Auras[AuraName].Stats.StaminaPoint
+
+		print(HPtargetPoint * 50, SPtargetPoint * 40)
+
+		for _, AllBars in HPBar["Divider_Bar"]:GetChildren() do
+			if AllBars.Name ~= tostring(HPtargetPoint) then
+				AllBars.Visible = false
+			else
+				AllBars.Visible = true
+			end
+			if HPtargetPoint > 6 and AllBars.Name == "6" then
+				AllBars.Visible = true
+			end
+		end
+
+		for _, AllBars in StaminaBar["Divider_Bar"]:GetChildren() do
+			if AllBars.Name ~= tostring(SPtargetPoint) then
+				AllBars.Visible = false
+			else
+				AllBars.Visible = true
+			end
+			if SPtargetPoint > 6 and AllBars.Name == "6" then
+				AllBars.Visible = true
+			end
+		end
+	end
 end
 
 function PlayerController:UpdatePlayersData(comingData)
