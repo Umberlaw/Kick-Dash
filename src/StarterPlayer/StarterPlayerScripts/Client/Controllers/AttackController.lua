@@ -29,6 +29,14 @@ local AttackController = Knit.CreateController({
 })
 
 function AttackController:SetHiglight(deltatime)
+	local function MoveGradient(current, target, delta)
+		local difference = target - current
+		if math.abs(difference) <= delta then
+			return target
+		end
+		return current + math.clamp(difference, -delta, delta)
+	end
+
 	if self.HiglightStatus == "Default" and not self.RageActive then
 		if self.HiglightDefaultTween and self.HiglightDefaultTween.PlaybackState == Enum.PlaybackState.Playing then
 			self.HiglightDefaultTween:Cancel()
@@ -57,8 +65,8 @@ function AttackController:SetHiglight(deltatime)
 			self.HiglightDefaultTween = nil
 		end)
 	elseif self.HiglightStatus == "Attack" then
-		self.Higlight.FillTransparency = self.Higlight.FillTransparency
-			- (AuraHighlights[self.PlayersAttackData.Aura].Kick * deltatime)
+		self.Higlight.FillTransparency =
+			MoveGradient(self.Higlight.FillTransparency, AuraHighlights[self.PlayersAttackData.Aura].Kick, deltatime)
 	end
 end
 
@@ -70,17 +78,17 @@ function AttackController:Dash(dashpower: number)
 	DashVectorForce.ApplyAtCenterOfMass = true
 	DashVectorForce.Parent = Char.HumanoidRootPart
 	self.SoundController:PlaySoundOnlyClient({ SoundName = "Dash" })
-	self.EffectController:CreateEffect(
-		{ AuraName = self.PlayersAttackData.Aura, EffectName = "Dash" },
-		{ EnabledTime = 1, DiseabledTime = 2 }
-	)
+	self.EffectController:CreateEffect({ AuraName = self.PlayersAttackData.Aura, EffectName = "Dash" }, {
+		EnabledTime = math.round((dashpower / self.PlayersAttackData.MaxPower) * 10) / 10,
+		DiseabledTime = math.round((dashpower / self.PlayersAttackData.MaxPower) * 10) / 10,
+	})
 
 	if
 		dashpower / self.PlayersAttackData.MaxPower
 		>= KickStyleDatas.Kicks[self.PlayersAttackData.KickStyle].Stats.RagdollPercent
 	then
 		self.EffectController:CreateEffect(
-			{ AuraNAme = self.PlayersAttackData.Aura, EffectName = "FullCharge" },
+			{ AuraName = self.PlayersAttackData.Aura, EffectName = "FullCharge" },
 			{ EnabledTime = 0.25, DiseabledTime = 1.45 }
 		)
 	end

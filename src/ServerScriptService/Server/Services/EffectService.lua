@@ -230,7 +230,6 @@ function EffectService:SetAtmosphere(player, AtmosphereName)
 end
 
 function EffectService:CreateEffect(player, targetEffect: table, targetDatas: table)
-	print(targetEffect)
 	--[[targetEffect = {AuraName = string,EffectName = string}]]
 	local targetingPart
 	if targetDatas.SpecialStatue and targetDatas.SpecialStatue == "PartCreate" then
@@ -243,11 +242,11 @@ function EffectService:CreateEffect(player, targetEffect: table, targetDatas: ta
 		targetingPart.Parent = workspace:FindFirstChild("Particles")
 		targetingPart.Name = tostring(player.UserId) .. targetEffect.EffectName
 	end
-
 	local EffectAsset = ReplicatedStorage.Shared.Assets.VFX.Particles.AuraEffects
 		:FindFirstChild(targetEffect.AuraName or "Simple")
 		:FindFirstChild(targetEffect.EffectName or "Hit")
 	local ClonnedEffect = if EffectAsset then EffectAsset:Clone() else nil
+	ClonnedEffect.CFrame = CFrame.new(0, 0, 0)
 	if not ClonnedEffect then
 		warn("EFFECT YOK")
 		return
@@ -256,29 +255,45 @@ function EffectService:CreateEffect(player, targetEffect: table, targetDatas: ta
 		warn("EFFECT BOS DONDU BABNA")
 		return
 	end
+	if targetEffect.EffectName == "Dash" then
+		if ClonnedEffect:GetAttribute("EnableTime") then
+			ClonnedEffect:SetAttribute(
+				"EnableTime",
+				ClonnedEffect:GetAttribute("EnableTime") * targetDatas.EnabledTime * 10
+			)
+			print(targetDatas.EnabledTime)
+			print(ClonnedEffect:GetAttribute("EnableTime"), targetDatas.EnabledTime)
+			print(ClonnedEffect:GetAttribute("EnableTime") * targetDatas.EnabledTime)
+		end
+		if ClonnedEffect:GetAttribute("DisableTime") then
+			ClonnedEffect:SetAttribute(
+				"DisableTime",
+				ClonnedEffect:GetAttribute("DisableTime") * targetDatas.DiseabledTime * 20
+			)
+		end
+	end
+	print(ClonnedEffect:GetAttribute("DisableTime"), ClonnedEffect:GetAttribute("EnableTime"))
 	if not self.PlayerEffects[player.UserId] then
 		self.PlayerEffects[player.UserId] = {}
 	end
 	ClonnedEffect.Parent = if targetDatas.SpecialStatue == "PartCreate"
 		then workspace:FindFirstChild("Particles"):FindFirstChild(tostring(player.UserId) .. targetEffect.EffectName)
-		elseif targetDatas.Target then targetDatas.Targe
-		else player.Character.Torso
+		elseif targetDatas.Target then targetDatas.Target
+		else player.Character.HumanoidRootPart
 	self.PlayerEffects[player.UserId][ClonnedEffect] = ClonnedEffect
 	print("Createlendi")
 	if ClonnedEffect:IsA("Attachment") then
 		for _, allTargetParticles in self.PlayerEffects[player.UserId][ClonnedEffect]:GetChildren() do
+			print(allTargetParticles.Enabled)
 			allTargetParticles.Enabled = true
-			allTargetParticles.Rate = targetDatas.Rate or allTargetParticles.Rate
-			task.delay(ClonnedEffect:GetAttribute("EnabledTime") or targetDatas.EnabledTime or 1, function()
-				self:ClearEffect(player, ClonnedEffect, targetDatas, targetingPart)
-			end)
+			print(allTargetParticles.Enabled)
 		end
 	elseif ClonnedEffect:IsA("ParticleEmitter") then
 		ClonnedEffect.Enabled = true
-		task.delay(ClonnedEffect:GetAttribute("EnabledTime") or targetDatas.EnabledTime or 1, function()
-			self:ClearEffect(player, ClonnedEffect, targetDatas, targetingPart)
-		end)
 	end
+	task.delay(ClonnedEffect:GetAttribute("EnableTime") or targetDatas.EnabledTime or 1, function()
+		self:ClearEffect(player, ClonnedEffect, targetDatas, targetingPart)
+	end)
 end
 
 function EffectService:ClearEffect(player, targetEffect, targetDatas, targetingpart)
@@ -286,7 +301,7 @@ function EffectService:ClearEffect(player, targetEffect, targetDatas, targetingp
 		for _, allTargetParticles in self.PlayerEffects[player.UserId][targetEffect]:GetChildren() do
 			allTargetParticles.Enabled = false
 		end
-		task.delay(targetEffect:GetAttribute("DiseabledTime") or targetDatas.DiseabledTime or 1, function()
+		task.delay(targetEffect:GetAttribute("DisableTime") or targetDatas.DiseabledTime or 1, function()
 			print(self.PlayerEffects[player.UserId], self.PlayerEffects[player.UserId][targetEffect])
 			if self.PlayerEffects[player.UserId][targetEffect] then
 				self.PlayerEffects[player.UserId][targetEffect]:Destroy()
@@ -298,7 +313,7 @@ function EffectService:ClearEffect(player, targetEffect, targetDatas, targetingp
 		end)
 	elseif targetEffect:IsA("ParticleEmitter") then
 		targetEffect.Enabled = false
-		task.delay(targetEffect:GetAttribute("DiseabledTime") or targetDatas.DiseabledTime or 1, function()
+		task.delay(targetEffect:GetAttribute("DisableTime") or targetDatas.DiseabledTime or 1, function()
 			print(self.PlayerEffects[player.UserId], self.PlayerEffects[player.UserId][targetEffect])
 			if self.PlayerEffects[player.UserId][targetEffect] then
 				self.PlayerEffects[player.UserId][targetEffect]:Destroy()

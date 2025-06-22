@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 
 local Knit = require(ReplicatedStorage.Packages.knit)
 local Promise = require(Knit.Util.Promise)
@@ -56,11 +57,25 @@ function SoundService:PlaySound(player, soundData: table)
 			if extraSounds:IsA("Sound") then
 				extraSounds:Play()
 				task.delay(extraSounds.TimeLength, function()
+					local StopTween = TweenService:Create(
+						extraSounds,
+						TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0, false, 0),
+						{ Volume = 0 }
+					)
+					StopTween:Play()
+					StopTween.Completed:Wait()
 					extraSounds:Stop()
 				end)
 			end
 		end
 		task.delay(soundData.PlayTime or 1, function()
+			local StopTween = TweenService:Create(
+				self.PlayersSounds[player.UserId][soundData.SoundName],
+				TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0, false, 0),
+				{ Volume = 0 }
+			)
+			StopTween:Play()
+			StopTween.Completed:Wait()
 			self.PlayersSounds[player.UserId][soundData.SoundName]:Stop()
 		end)
 	elseif soundData.PlayingArea == "Client" then

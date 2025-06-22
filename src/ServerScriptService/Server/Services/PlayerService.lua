@@ -27,8 +27,12 @@ local PlayerService = Knit.CreateService({
 function PlayerService:Knocked(knockedPlayer)
 	local knockDatas = { Knocked = true, WalkSpeed = 0, Ragdoll = 0 }
 	self:UpdatePlayerData(knockedPlayer, knockDatas)
-	local KnockedPlayerData = self.PlayerDatas[knockedPlayer.UserId]
 
+	local KnockedPlayerData = self.PlayerDatas[knockedPlayer.UserId]
+	self.EffectService:CreateEffect(knockedPlayer, {
+		AuraName = KnockedPlayerData.Aura,
+		EffectName = "Knockdown",
+	}, { EnabledTime = 1, DiseabledTime = 1 })
 	if not KnockedPlayerData then
 		warn("Datasi yok bunun")
 		return
@@ -505,7 +509,7 @@ function PlayerService:SetZones()
 		local targetpart = workspace:FindFirstChild("ReturnPart")
 		if targetpart then
 			player.Character:PivotTo(targetpart.CFrame)
-			self.AttackService:GiveDamage(player, math.floor(self.PlayerDatas[player.UserId].MaximumHealth / 2))
+			self.AttackService:GiveDamage(player, math.floor(self.PlayerDatas[player.UserId].MaximumHealth / 5))
 		end
 	end)
 end
