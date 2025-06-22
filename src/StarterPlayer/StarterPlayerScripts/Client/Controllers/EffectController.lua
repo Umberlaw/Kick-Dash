@@ -51,6 +51,10 @@ function EffectController:DiseableEffect() end
 
 function EffectController:PlayOnServer() end
 
+function EffectController:CreateEffect(targetEffect: table, targetEffectDatas: table)
+	self.EffectService.CreateEffect:Fire(targetEffect, targetEffectDatas)
+end
+
 function EffectController:KnitInit()
 	self.EffectService = Knit.GetService("EffectService")
 end

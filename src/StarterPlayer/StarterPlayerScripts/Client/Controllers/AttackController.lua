@@ -64,11 +64,27 @@ end
 
 function AttackController:Dash(dashpower: number)
 	local DashVectorForce = Instance.new("VectorForce")
+
 	DashVectorForce.Attachment0 = Char.HumanoidRootPart:FindFirstChild("KnockBackAttachment")
 	DashVectorForce.RelativeTo = Enum.ActuatorRelativeTo.World
 	DashVectorForce.ApplyAtCenterOfMass = true
 	DashVectorForce.Parent = Char.HumanoidRootPart
 	self.SoundController:PlaySoundOnlyClient({ SoundName = "Dash" })
+	self.EffectController:CreateEffect(
+		{ AuraName = self.PlayersAttackData.Aura, EffectName = "Dash" },
+		{ EnabledTime = 1, DiseabledTime = 2 }
+	)
+
+	if
+		dashpower / self.PlayersAttackData.MaxPower
+		>= KickStyleDatas.Kicks[self.PlayersAttackData.KickStyle].Stats.RagdollPercent
+	then
+		self.EffectController:CreateEffect(
+			{ AuraNAme = self.PlayersAttackData.Aura, EffectName = "FullCharge" },
+			{ EnabledTime = 0.25, DiseabledTime = 1.45 }
+		)
+	end
+
 	print("Ses oynamaliydi")
 	local function GoingDistance()
 		return (2 * (1 + (16 * (dashpower / 100))) * Char.HumanoidRootPart.AssemblyMass) / (0.2 ^ 2)
@@ -110,7 +126,6 @@ function AttackController:StartKickAttack(atackpower)
 		return
 	end
 	if type(self.PlayersAttackData.AuraPassive) == "boolean" and self.PlayersAttackData.AuraPassive then
-		print("PASSIVE VAR LO")
 		self.AttackService.PassiveRelease:Fire("Aura")
 	end
 
@@ -444,6 +459,20 @@ function AttackController:KickAttack()
 							self.PlayersAttackData.Animations.Prepare:Play()
 							self.Attacking = true
 
+							self.AnimationConnections["ChargeCrack"] = self.PlayersAttackData.Animations.Prepare
+								:GetMarkerReachedSignal("ChargeCrack")
+								:Connect(function()
+									print("CRAAAACK")
+									self.EffectController:CreateEffect({
+										AuraName = self.PlayersAttackData.Aura,
+										EffectName = "Crack",
+									}, {
+										EnabledTime = 1.45,
+										DiseabledTime = 1.74,
+										SpecialStatue = "PartCreate",
+									})
+									self.SoundController:PlaySoundInServer({ SoundName = "CrackSound" })
+								end)
 							self.AnimationConnections["Prepare"] = self.PlayersAttackData.Animations.Prepare
 								:GetMarkerReachedSignal("Finished")
 								:Connect(function()
@@ -457,12 +486,7 @@ function AttackController:KickAttack()
 							self.AnimationConnections["ChargeUp"] = self.PlayersAttackData.Animations.Prepare
 								:GetMarkerReachedSignal("ChargeUp")
 								:Connect(function()
-									--Todo
-								end)
-							self.AnimationConnections["ChargeCrack"] = self.PlayersAttackData.Animations.Prepare
-								:GetMarkerReachedSignal("ChargeCrack")
-								:Connect(function()
-									--Todo
+									print("Charging")
 								end)
 						end
 					end)

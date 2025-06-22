@@ -1,3 +1,4 @@
+local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Knit = require(ReplicatedStorage.Packages.knit)
@@ -7,9 +8,10 @@ local InterfaceTweens = require(ReplicatedStorage.Shared.configs.InterfaceTweens
 
 local EffectService = Knit.CreateService({
 	Name = "EffectService",
-	Client = { SetAtmosphere = Knit.CreateSignal() },
+	Client = { SetAtmosphere = Knit.CreateSignal(), CreateEffect = Knit.CreateSignal() },
 	PlayerIndicators = {},
 	PlayerDebuffes = {},
+	PlayerEffects = {},
 })
 
 function EffectService:RemoveDebuffIndicator(player, IndicatorName)
@@ -227,10 +229,96 @@ function EffectService:SetAtmosphere(player, AtmosphereName)
 	end
 end
 
+function EffectService:CreateEffect(player, targetEffect: table, targetDatas: table)
+	print(targetEffect)
+	--[[targetEffect = {AuraName = string,EffectName = string}]]
+	local targetingPart
+	if targetDatas.SpecialStatue and targetDatas.SpecialStatue == "PartCreate" then
+		targetingPart = Instance.new("Part")
+		targetingPart.Size = Vector3.new(4, 1, 2)
+		targetingPart.Position = player.Character["Right Leg"].Position
+		targetingPart.CanCollide = false
+		targetingPart.Anchored = true
+		targetingPart.Transparency = 1
+		targetingPart.Parent = workspace:FindFirstChild("Particles")
+		targetingPart.Name = tostring(player.UserId) .. targetEffect.EffectName
+	end
+
+	local EffectAsset = ReplicatedStorage.Shared.Assets.VFX.Particles.AuraEffects
+		:FindFirstChild(targetEffect.AuraName or "Simple")
+		:FindFirstChild(targetEffect.EffectName or "Hit")
+	local ClonnedEffect = if EffectAsset then EffectAsset:Clone() else nil
+	if not ClonnedEffect then
+		warn("EFFECT YOK")
+		return
+	end
+	if not targetEffect then
+		warn("EFFECT BOS DONDU BABNA")
+		return
+	end
+	if not self.PlayerEffects[player.UserId] then
+		self.PlayerEffects[player.UserId] = {}
+	end
+	ClonnedEffect.Parent = if targetDatas.SpecialStatue == "PartCreate"
+		then workspace:FindFirstChild("Particles"):FindFirstChild(tostring(player.UserId) .. targetEffect.EffectName)
+		elseif targetDatas.Target then targetDatas.Targe
+		else player.Character.Torso
+	self.PlayerEffects[player.UserId][ClonnedEffect] = ClonnedEffect
+	print("Createlendi")
+	if ClonnedEffect:IsA("Attachment") then
+		for _, allTargetParticles in self.PlayerEffects[player.UserId][ClonnedEffect]:GetChildren() do
+			allTargetParticles.Enabled = true
+			allTargetParticles.Rate = targetDatas.Rate or allTargetParticles.Rate
+			task.delay(ClonnedEffect:GetAttribute("EnabledTime") or targetDatas.EnabledTime or 1, function()
+				self:ClearEffect(player, ClonnedEffect, targetDatas, targetingPart)
+			end)
+		end
+	elseif ClonnedEffect:IsA("ParticleEmitter") then
+		ClonnedEffect.Enabled = true
+		task.delay(ClonnedEffect:GetAttribute("EnabledTime") or targetDatas.EnabledTime or 1, function()
+			self:ClearEffect(player, ClonnedEffect, targetDatas, targetingPart)
+		end)
+	end
+end
+
+function EffectService:ClearEffect(player, targetEffect, targetDatas, targetingpart)
+	if targetEffect:IsA("Attachment") then
+		for _, allTargetParticles in self.PlayerEffects[player.UserId][targetEffect]:GetChildren() do
+			allTargetParticles.Enabled = false
+		end
+		task.delay(targetEffect:GetAttribute("DiseabledTime") or targetDatas.DiseabledTime or 1, function()
+			print(self.PlayerEffects[player.UserId], self.PlayerEffects[player.UserId][targetEffect])
+			if self.PlayerEffects[player.UserId][targetEffect] then
+				self.PlayerEffects[player.UserId][targetEffect]:Destroy()
+				self.PlayerEffects[player.UserId][targetEffect] = nil
+			end
+			if targetDatas.SpecialStatue and targetDatas.SpecialStatue == "PartCreate" and targetingpart then
+				targetingpart:Destroy()
+			end
+		end)
+	elseif targetEffect:IsA("ParticleEmitter") then
+		targetEffect.Enabled = false
+		task.delay(targetEffect:GetAttribute("DiseabledTime") or targetDatas.DiseabledTime or 1, function()
+			print(self.PlayerEffects[player.UserId], self.PlayerEffects[player.UserId][targetEffect])
+			if self.PlayerEffects[player.UserId][targetEffect] then
+				self.PlayerEffects[player.UserId][targetEffect]:Destroy()
+				self.PlayerEffects[player.UserId][targetEffect] = nil
+			end
+			if targetDatas.SpecialStatue and targetDatas.SpecialStatue == "PartCreate" and targetingpart then
+				targetingpart:Destroy()
+			end
+		end)
+	end
+end
+
 function EffectService:KnitInit()
 	self.PlayerService = Knit.GetService("PlayerService")
 end
 
-function EffectService:KnitStart() end
+function EffectService:KnitStart()
+	self.Client.CreateEffect:Connect(function(player, targetEffect, TargetDatas)
+		self:CreateEffect(player, targetEffect, TargetDatas)
+	end)
+end
 
 return EffectService
