@@ -288,6 +288,9 @@ function PlayerService:UpdatePlayerData(player, comingData: table)
 			clonneddecor.Parent = DisplayName.Kick
 		end
 	end
+	if comingData.Health then
+		self:UpdateHealthBar(player)
+	end
 end
 
 function PlayerService:LoadPlayersData(player)
@@ -338,7 +341,17 @@ end
 ------------------------------------------------
 
 ---------------Player Visual Areas---------------------------------
-
+function PlayerService:UpdateHealthBar(player)
+	local HPBar = player.Character:FindFirstChild("HPBar") or nil
+	if not HPBar then
+		warn("NOT HP BAR")
+		return
+	end
+	local remainingPercent =
+		math.clamp(1 - (self.PlayerDatas[player.UserId].Health / self.PlayerDatas[player.UserId].MaximumHealth), 0, 1)
+	local UIGradient = HPBar.Health.HP.UIGradient
+	UIGradient.Offset = Vector2.new(remainingPercent)
+end
 ----------------------------------------------------
 
 ----PLAYER STARTING EVENTS--------------------------
@@ -390,6 +403,15 @@ function PlayerService:SetPlayerDependicies(char)
 		local SoundsFolder = Instance.new("Folder")
 		SoundsFolder.Parent = char.Head
 		SoundsFolder.Name = "Sounds"
+	end
+
+	if not char:FindFirstChild("HPBar") then
+		local HPBar: BillboardGui = ReplicatedStorage.Shared.Assets.Indicators:FindFirstChild("HP"):Clone()
+		HPBar.Name = "HPBar"
+		HPBar.Parent = char
+		HPBar.Adornee = char.Head
+		HPBar.PlayerToHideFrom = game.Players:GetPlayerFromCharacter(char)
+		HPBar.Health.HP.UIGradient.Offset = Vector2.new(0, 0)
 	end
 
 	hum:SetStateEnabled(Enum.HumanoidStateType.Swimming, false)
