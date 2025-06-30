@@ -104,7 +104,7 @@ end
 
 function EffectService:Clear(player, comingData)
 	print(player, "Efektlerini temizledik")
-	if self.PlayerIndicators[player.UserId] then
+	if self.PlayerIndicators and self.PlayerIndicators[player.UserId] then
 		for indicatorKey, allIndicators in self.PlayerIndicators[player.UserId] do
 			allIndicators:Destroy()
 			self.PlayerIndicators[indicatorKey] = nil

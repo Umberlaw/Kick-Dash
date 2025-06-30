@@ -1,7 +1,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local ContentProvider = game:GetService("ContentProvider")
---local TweenService = game:GetService("TweenService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 local starterGui = game:GetService("StarterGui")
 
 local Assets = ReplicatedStorage:WaitForChild("Shared").Assets
@@ -42,7 +43,7 @@ local PlayerController = Knit.CreateController({
 		AuraPassive = 0,
 		FusionPassive = false,
 		Knocked = false,
-		InSafeZone = false,
+		InSafeZone = true,
 		Animations = {},
 		Sounds = {},
 		Debuffes = {},
@@ -132,7 +133,6 @@ function PlayerController:UpdateStaminaBar()
 		StaminaBarTween.Completed:Wait()
 		StaminaBarRedFrameTween:Play()
 
-		StaminaBarRedFrameTween.Completed:Wait()
 		resolve()
 	end):andThen(function()
 		StaminaBarPromise = nil
@@ -212,12 +212,8 @@ function PlayerController:UpdateHealthBar()
 
 		HealthBarTween.Completed:Wait()
 		HealthBarRedTween:Play()
-
-		HealthBarRedTween.Completed:Wait()
 		resolve()
 	end):andThen(function()
-		print("oYnadik Bitti kral")
-
 		HealthBarPromise = nil
 	end)
 end
@@ -295,8 +291,6 @@ function PlayerController:UpdateHUD(AuraName, StyleName)
 
 		local SPtargetPoint = KickStyleDatas.Kicks[StyleName].Stats.StaminaPoint
 			+ KickStyleDatas.Auras[AuraName].Stats.StaminaPoint
-
-		print(HPtargetPoint * 50, SPtargetPoint * 40)
 
 		for _, AllBars in HPBar["Divider_Bar"]:GetChildren() do
 			if AllBars.Name ~= tostring(HPtargetPoint) then
@@ -421,7 +415,53 @@ function PlayerController:KnitInit()
 	self.CoreHUD = PlayerGui:WaitForChild("CoreHUD")
 end
 
+function PlayerController:CameraNuance()
+	if self.CameraNuanceTween and self.CameraNuanceTween.PlaybackState == Enum.PlaybackState.Playing then
+		self.CameraNuanceTween:Cancel()
+		self.CameraNuanceTween = nil
+	end
+	if self.Data.Health > 0 and not self.Data.Knocked then
+		local offset = Char.Torso.CFrame:ToObjectSpace(Char.HumanoidRootPart.CFrame).Position
+		local camOffset = Vector3.new(-offset.X, -offset.Y, -offset.Z)
+		self.CameraNuanceTween = TweenService:Create(
+			Char.Humanoid,
+			TweenInfo.new(0.0625, Enum.EasingStyle.Sine, Enum.EasingDirection.In),
+			{ CameraOffset = camOffset }
+		)
+	else
+		self.CameraNuanceTween = TweenService:Create(
+			Char.Humanoid,
+			TweenInfo.new(0.0625, Enum.EasingStyle.Sine, Enum.EasingDirection.In),
+			{ CameraOffset = Vector3.zero }
+		)
+	end
+
+	self.CameraNuanceTween:Play()
+end
+
+function PlayerController:JumpNuance()
+	if self.Data.InSafeZone then
+		return
+	end
+
+	local jumpForce = 1.15
+	local moveDirection = Char.Humanoid.MoveDirection
+	local currentVelocity = Char.HumanoidRootPart.Velocity
+	local lookDirection = Char.HumanoidRootPart.CFrame.LookVector
+	local dashForceMultiplier = 0.5
+	local stationaryDashForceMultiplier = -0.25
+	if moveDirection.Magnitude > 0 then
+		local dashVelocity = currentVelocity + moveDirection * Char.Humanoid.WalkSpeed * dashForceMultiplier
+		Char.HumanoidRootPart.Velocity = dashVelocity
+	elseif moveDirection.Magnitude == 0 then
+		local stationaryDashForce = lookDirection * Char.Humanoid.WalkSpeed * stationaryDashForceMultiplier
+		Char.HumanoidRootPart.Velocity = currentVelocity + stationaryDashForce + Vector3.new(0, jumpForce / 3, 0) -- Ufak bir yukarı itme de ekledim
+	end
+end
+
 function PlayerController:KnitStart()
+	self.CameraNuanceTween = nil
+
 	self.PlayerService.SendPlayerData:Connect(function(comingData)
 		self:UpdatePlayersData(comingData)
 	end)
@@ -429,6 +469,10 @@ function PlayerController:KnitStart()
 	self:LoadPlayersAnimations()
 
 	self:SetCoreHuds()
+
+	RunService.RenderStepped:Connect(function()
+		self:CameraNuance()
+	end)
 end
 
 return PlayerController

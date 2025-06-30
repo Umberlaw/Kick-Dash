@@ -31,23 +31,6 @@ function PortalController:CreatePortal()
 		local portalA = Portal.FromPart(workspace.World, self.Portals[portalA1].PortalA, Enum.NormalId.Front)
 		local portalB = Portal.FromPart(workspace.World, self.Portals[portalA1].PortalB, Enum.NormalId.Front)
 
-		--[[portalA:AddSkybox(portalB:GetPart().Sky)
-		portalB:AddSkybox(portalA:GetPart().Sky)
-            local currentSkybox = characterPortalSide:GetPart().Sky:Clone()
-		currentSkybox.Parent = Lighting
-
-        	if prevPortalSide ~= cameraPortalSide then
-				currentSkybox:Destroy()
-				currentSkybox = cameraPortalSide:GetPart().Sky:Clone()
-				currentSkybox.Parent = Lighting
-			end
-
-			prevPortalSide = cameraPortalSide
-            local cameraPortalSide = characterPortalSide
-            	cameraPortalSide = portal:GetLinked()
-
-        ]]
-
 		portalA:Link(portalB)
 		portalB:Link(portalA)
 

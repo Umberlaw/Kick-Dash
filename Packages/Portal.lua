@@ -1,5 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ViewportWindow = require(ReplicatedStorage.Packages.ViewportWindow)
+local ViewportWindow = require(ReplicatedStorage.Modules.ViewportWindow)
 local Helpers = require(ReplicatedStorage.Utility.Helpers)
 local Llama = require(ReplicatedStorage.Packages.Llama)
 local Class = require(ReplicatedStorage.Utility.Class)

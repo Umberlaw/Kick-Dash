@@ -57,7 +57,6 @@ function PlayerService:Knocked(knockedPlayer)
 					task.delay(4, function() -- task delay yerine Wish olayi gelecek
 						KnockedPlayerData.PlayerAnims["Rolling"]:Stop()
 						KnockedPlayerData.PlayerAnims["KnockUp"]:Play()
-						print("Tamam tekrar oynatti iste ")
 					end)
 				end)
 				KnockedPlayerData.PlayerAnims["KnockUp"]:GetMarkerReachedSignal("End"):Connect(function()
@@ -108,12 +107,14 @@ function PlayerService:Respawn(RespawningPlayer)
 	})
 	self.PassiveService:AddPassivePoint(RespawningPlayer, "Aura", 0)
 	self.PassiveService:AddPassivePoint(RespawningPlayer, "Style", 0)
+	self.EffectService:SetAtmosphere(RespawningPlayer, "Lobby")
 end
 ---------------------------
 
 ---------------Player Data Areas-------------------------------
 
 function PlayerService:PlayerEnteredSafeZone(player)
+	self.EffectService:SetAtmosphere(player, "Lobby")
 	local targetPlayerData = self.PlayerDatas[player.UserId] or nil
 	if not targetPlayerData then
 		warn("Datasi yok bunun")
@@ -144,7 +145,6 @@ function PlayerService:ClearPlayerDatas(player)
 	for _, Services in Knit:GetServices() do
 		if Services["Clear"] then
 			Services["Clear"](self, player, TargetPlayerData)
-			print(Services, "sERVICE temizledi verilerini")
 		end
 	end
 end
@@ -173,7 +173,6 @@ function PlayerService:RemoveDebuff(player, DebuffName)
 		end
 		self.PlayerDatas[player.UserId].Debuffes[DebuffName] = nil
 	end
-	print(self.PlayerDatas[player.UserId].Debuffes)
 end
 
 function PlayerService:UpdateDebuffData(player, debuffName, debuffData)
@@ -232,7 +231,7 @@ function PlayerService:UpdatePlayerData(player, comingData: table)
 		end
 	end
 	self.Client.SendPlayerData:Fire(player, self.PlayerDatas[player.UserId])
-	local char = player.Character
+	local char = player.Character or player.CharacterAdded:Wait()
 	local AuraHiglight = char:FindFirstChild("AURAHIGHLIGHT")
 	local DisplayName = char:FindFirstChild("DisplayName")
 
@@ -276,7 +275,6 @@ function PlayerService:UpdatePlayerData(player, comingData: table)
 		if KickSoundsFolder then
 			for _, KickSounds in KickSoundsFolder:GetChildren() do
 				local RemainingName = KickSounds.Name:gsub("^" .. KickSoundsFolder.Name, "")
-				print(RemainingName)
 				self.SoundService:CreateSound(
 					player,
 					{ SoundObject = KickSounds, SoundName = "KickStyle" .. RemainingName }
@@ -297,6 +295,7 @@ function PlayerService:LoadPlayersData(player)
 		:GetPlayersData(player)
 		:andThen(function(comingData)
 			self.Client.SendPlayerData:Fire(player, comingData)
+			self.EffectService:SetAtmosphere(player, "Lobby")
 			local StatsPoints = self:SetKickStats(comingData)
 			local UpdatingDataTable = {
 				KickStyle = comingData.EquippedKickStyle,
@@ -319,6 +318,7 @@ function PlayerService:LoadPlayersData(player)
 				FusionPassive = false,
 				Knocked = false,
 				RageActive = false,
+				InSafeZone = true,
 			}
 			self:UpdatePlayerData(player, UpdatingDataTable)
 		end)
@@ -491,14 +491,6 @@ function PlayerService:SetZones()
 		self.EffectService:SetAtmosphere(player, "Arena")
 	end)
 
-	local TeleporterInGameAreaConteyner = Lobby:WaitForChild("Zones"):FindFirstChild("InGameTeleporter")
-	local TeleporterInGameArea = Zoneplus.new(TeleporterInGameAreaConteyner)
-
-	TeleporterInGameArea.playerEntered:Connect(function(player)
-		player.Character:PivotTo(Lobby:WaitForChild("Points"):FindFirstChild("SafezoneTeleport").CFrame)
-		self.EffectService:SetAtmosphere(player, "Lobby")
-	end)
-
 	local OutArenaZone = {}
 
 	for _, meshparts in workspace:FindFirstChild("Waterhitbox"):GetChildren() do
@@ -519,20 +511,22 @@ function PlayerService:SetCharClone(player)
 		ReplicatedStorage.Shared.Assets.Models:FindFirstChild("CharacterClones"):FindFirstChild(player.Name):Destroy()
 	end
 	local char = player.Character or nil
-	char.Archivable = true
-	local clonnedChar = char:Clone()
-	for _, allScriptsandGuis in clonnedChar:GetChildren() do
-		if
-			allScriptsandGuis:IsA("Script")
-			or allScriptsandGuis:IsA("LocalScript")
-			or allScriptsandGuis:IsA("ModuleScript")
-			or allScriptsandGuis:IsA("BillboardGui")
-		then
-			allScriptsandGuis:Destroy()
+	if char then
+		char.Archivable = true
+		local clonnedChar = char:Clone()
+		for _, allScriptsandGuis in clonnedChar:GetChildren() do
+			if
+				allScriptsandGuis:IsA("Script")
+				or allScriptsandGuis:IsA("LocalScript")
+				or allScriptsandGuis:IsA("ModuleScript")
+				or allScriptsandGuis:IsA("BillboardGui")
+			then
+				allScriptsandGuis:Destroy()
+			end
 		end
+		clonnedChar.Parent = ReplicatedStorage.Shared.Assets.Models:FindFirstChild("CharacterClones")
+		clonnedChar.Name = player.Name
 	end
-	clonnedChar.Parent = ReplicatedStorage.Shared.Assets.Models:FindFirstChild("CharacterClones")
-	clonnedChar.Name = player.Name
 end
 
 function PlayerService:CommandPanel(player)
@@ -551,6 +545,31 @@ function PlayerService:CommandPanel(player)
 	end)
 end
 
+function PlayerService:Jump(comingplayer)
+	return Promise.new(function(resolve, reject)
+		if self.PlayerDatas[comingplayer.UserId] then
+			if self.PlayerDatas[comingplayer.UserId].InSafeZone then
+				resolve()
+			else
+				local leftingStamina =
+					math.clamp(self.PlayerDatas[comingplayer.UserId].Stamina - (math.round((20 / 3))), -1, math.huge)
+				if leftingStamina >= 0 then
+					self:UpdatePlayerData(comingplayer, { Stamina = leftingStamina })
+					resolve()
+				else
+					reject("Dont have enough stamina")
+				end
+			end
+		else
+			reject("PlayerDataDidntFindIt")
+		end
+	end)
+end
+
+function PlayerService.Client:JumpStamina(player)
+	return self.Server:Jump(player):await()
+end
+
 --------------------------------------------------------
 
 function PlayerService:KnitInit()
@@ -566,7 +585,6 @@ function PlayerService:KnitInit()
 end
 
 function PlayerService:KnitStart()
-	print("PlayerServiceStarted")
 	self:SetZones()
 	Players.PlayerAdded:Connect(function(player)
 		player.CharacterAdded:Connect(function(character)

@@ -10,14 +10,14 @@ local Y_SPIN = CFrame.fromEulerAnglesXYZ(0, math.pi, 0)
 
 local FLIP_X = CFrame.new(0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0, 1)
 local SIDE_CFRAME = FLIP_X * CFrame.fromEulerAnglesXYZ(math.pi, math.pi, 0)
-local TOP_CFRAME = FLIP_X * CFrame.fromEulerAnglesXYZ(math.pi, math.pi/2, 0)
-local BOTTOM_CFRAME = FLIP_X * CFrame.fromEulerAnglesXYZ(math.pi, -math.pi/2, 0)
+local TOP_CFRAME = FLIP_X * CFrame.fromEulerAnglesXYZ(math.pi, math.pi / 2, 0)
+local BOTTOM_CFRAME = FLIP_X * CFrame.fromEulerAnglesXYZ(math.pi, -math.pi / 2, 0)
 
 local SIDES = {
 	["SkyboxBk"] = Enum.NormalId.Back,
 	["SkyboxFt"] = Enum.NormalId.Front,
 	["SkyboxLf"] = Enum.NormalId.Left,
-	["SkyboxRt"] = Enum.NormalId.Right
+	["SkyboxRt"] = Enum.NormalId.Right,
 }
 
 -- Class
@@ -58,26 +58,31 @@ end
 
 function ViewportWindow:_refreshVisibility(cameraCFrame, surfaceCFrame, surfaceSize, marginOfError)
 	local aabbCF, aabbSize = Helpers.getAABB({
-		surfaceCFrame * Vector3.new(-surfaceSize.X / 2 + marginOfError, surfaceSize.Y / 2 - marginOfError, -marginOfError),
-		surfaceCFrame * Vector3.new(surfaceSize.X / 2 - marginOfError, surfaceSize.Y / 2 - marginOfError, -marginOfError),
-		surfaceCFrame * Vector3.new(surfaceSize.X / 2 - marginOfError, -surfaceSize.Y / 2 + marginOfError, -marginOfError),
-		surfaceCFrame* Vector3.new(-surfaceSize.X / 2 + marginOfError, -surfaceSize.Y / 2 + marginOfError, -marginOfError),
+		surfaceCFrame
+			* Vector3.new(-surfaceSize.X / 2 + marginOfError, surfaceSize.Y / 2 - marginOfError, -marginOfError),
+		surfaceCFrame
+			* Vector3.new(surfaceSize.X / 2 - marginOfError, surfaceSize.Y / 2 - marginOfError, -marginOfError),
+		surfaceCFrame
+			* Vector3.new(surfaceSize.X / 2 - marginOfError, -surfaceSize.Y / 2 + marginOfError, -marginOfError),
+		surfaceCFrame
+			* Vector3.new(-surfaceSize.X / 2 + marginOfError, -surfaceSize.Y / 2 + marginOfError, -marginOfError),
 		cameraCFrame.Position,
 	})
-	
+
 	-- region3 is more performant tmk over newer API which allows rotation (which we don't need)
 	-- local overlap = self.worldRoot:GetPartBoundsInBox(aabbCF, aabbSize)
-	local overlap = self.worldRoot:FindPartsInRegion3(Region3.new(
-		aabbCF.Position + aabbSize / 2,
-		aabbCF.Position - aabbSize / 2
-	), nil, math.huge)
-	
+	local overlap = self.worldRoot:FindPartsInRegion3(
+		Region3.new(aabbCF.Position + aabbSize / 2, aabbCF.Position - aabbSize / 2),
+		nil,
+		math.huge
+	)
+
 	local overlapped = {}
 	for _, part in pairs(overlap) do
 		part.LocalTransparencyModifier = 1
 		overlapped[part] = true
 	end
-	
+
 	for _, instance in pairs(self.worldRoot:GetDescendants()) do
 		if instance:IsA("BasePart") and not overlapped[instance] then
 			instance.LocalTransparencyModifier = 0
@@ -89,7 +94,7 @@ end
 
 function ViewportWindow:AddSkybox(skybox)
 	self.skyboxFrame:ClearAllChildren()
-	
+
 	local model = Instance.new("Model")
 
 	local side = Instance.new("Part")
@@ -130,7 +135,7 @@ function ViewportWindow:AddSkybox(skybox)
 	side.Parent = model
 	top.Parent = model
 	bottom.Parent = model
-	
+
 	model.Name = "SkyboxModel"
 	model.Parent = self.skyboxFrame
 end
@@ -153,13 +158,14 @@ function ViewportWindow:GetSurface()
 	local v = -Vector3.FromNormalId(self.surfaceGui.Face)
 	local u = Vector3.new(v.y, math.abs(v.x + v.z), 0)
 	local lcf = CFrame.fromMatrix(Vector3.new(), u:Cross(v), u, v)
-	local cf = part.CFrame * CFrame.new(-v * part.Size/2) * lcf
+	local cf = part.CFrame * CFrame.new(-v * part.Size / 2) * lcf
 
-	return cf, Vector3.new(
-		math.abs(lcf.XVector:Dot(part.Size)),
-		math.abs(lcf.YVector:Dot(part.Size)),
-		math.abs(lcf.ZVector:Dot(part.Size))
-	)
+	return cf,
+		Vector3.new(
+			math.abs(lcf.XVector:Dot(part.Size)),
+			math.abs(lcf.YVector:Dot(part.Size)),
+			math.abs(lcf.ZVector:Dot(part.Size))
+		)
 end
 
 function ViewportWindow:Render(cameraCFrame, surfaceCFrame, surfaceSize)
@@ -169,17 +175,17 @@ function ViewportWindow:Render(cameraCFrame, surfaceCFrame, surfaceSize)
 	if not (surfaceCFrame and surfaceSize) then
 		surfaceCFrame, surfaceSize = self:GetSurface()
 	end
-	
+
 	if surfaceCFrame:PointToObjectSpace(cameraCFrame.Position).Z > 0 then
 		return
-	end 
+	end
 
 	local xCross = surfaceCFrame.YVector:Cross(cameraCFrame.ZVector)
 	local xVector = xCross:Dot(xCross) > 0 and xCross.Unit or cameraCFrame.XVector
 	local levelCameraCFrame = CFrame.fromMatrix(cameraCFrame.Position, xVector, surfaceCFrame.YVector)
 
-	local tc = surfaceCFrame * Vector3.new(0, surfaceSize.y/2, 0)
-	local bc = surfaceCFrame * Vector3.new(0, -surfaceSize.y/2, 0)
+	local tc = surfaceCFrame * Vector3.new(0, surfaceSize.y / 2, 0)
+	local bc = surfaceCFrame * Vector3.new(0, -surfaceSize.y / 2, 0)
 	local cstc = levelCameraCFrame:PointToObjectSpace(tc)
 	local csbc = levelCameraCFrame:PointToObjectSpace(bc)
 
@@ -199,22 +205,23 @@ function ViewportWindow:Render(cameraCFrame, surfaceCFrame, surfaceSize)
 	local dvx = -dvXZ.z
 	local camXZ = (surfaceCFrame:VectorToObjectSpace(cameraCFrame.LookVector) * VEC_XZ).Unit
 	local scale = camXZ:Dot(dvXZ) / dvx
-	local tanArcCos = math.sqrt(1 - dvx*dvx) / dvx
+	local tanArcCos = math.sqrt(1 - dvx * dvx) / dvx
 
 	local w, h = 1, 1
 	if self.surfaceGui.SizingMode == Enum.SurfaceGuiSizingMode.FixedSize then
 		h = surfaceSize.x / surfaceSize.y
 	end
 
-	local dx = math.sign(dv.x*dv.z) * tanArcCos
+	local dx = math.sign(dv.x * dv.z) * tanArcCos
 	local dy = dvXY.y / dvXY.z * h
 	local d = math.abs(scale * fovRatio * h)
 
-	local newCFrame = (surfaceCFrame - surfaceCFrame.Position) * Y_SPIN
+	local newCFrame = (surfaceCFrame - surfaceCFrame.Position)
+		* Y_SPIN
 		* CFrame.new(0, 0, 0, w, 0, 0, 0, h, 0, dx, dy, d)
 
 	local max = 0
-	local components = {newCFrame:GetComponents()}
+	local components = { newCFrame:GetComponents() }
 	for i = 1, #components do
 		max = math.max(max, math.abs(components[i]))
 	end
@@ -227,7 +234,7 @@ function ViewportWindow:Render(cameraCFrame, surfaceCFrame, surfaceSize)
 
 	self.camera.FieldOfView = camera.FieldOfView
 	self.camera.CFrame = scaledCFrame
-	
+
 	-- this eats performance!
 	-- self:_refreshVisibility(cameraCFrame, surfaceCFrame, surfaceSize, 0.001)
 end

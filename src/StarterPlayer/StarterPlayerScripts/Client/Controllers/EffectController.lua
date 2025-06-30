@@ -6,7 +6,7 @@ local Knit = require(ReplicatedStorage.Packages.knit)
 local LightingData = require(ReplicatedStorage.Shared.configs.Lightings)
 --local Promise = require(Knit.Util.Promise)
 
-local EffectController = Knit.CreateController({ Name = "EffectController", CurrentAtmospher = "Lobby" })
+local EffectController = Knit.CreateController({ Name = "EffectController", CurrentAtmospher = "Arena" })
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -35,6 +35,8 @@ function EffectController:SetAtmosphere(comingatmosphere: Atmosphere, Atmosphere
 	end
 
 	local PlayersAtmospher = game.Lighting:FindFirstChild("Atmosphere")
+		or game.Lighting:FindFirstChild("WorkAtmosphere")
+		or nil
 	if PlayersAtmospher then
 		for _, PropertyName in AtmosphereProperties do
 			if PlayersAtmospher[PropertyName] then

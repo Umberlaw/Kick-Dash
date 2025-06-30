@@ -625,14 +625,22 @@ function AttackController:KickAttack()
 	UserInputService.JumpRequest:Connect(function()
 		if self.PlayersAttackData and self.PlayersAttackData.Knocked then
 			Char.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
+			return
+		end
+		local success, _ = self.PlayerService:JumpStamina(Player)
+		if not success then
+			Char.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
+			return
 		end
 		if self.Attacking then
 			Char.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
 		else
 			if self.PlayersAttackData and self.PlayersAttackData.Ragdoll <= 0 then
 				Char.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+				self.PlayerController:JumpNuance()
 			elseif self.PlayersAttackData and self.PlayersAttackData.Ragdoll >= 0 then
 				Char.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
+				return
 			end
 		end
 	end)
@@ -647,6 +655,7 @@ function AttackController:KnitInit()
 	self.CameraController = Knit.GetController("CameraController")
 	self.HelperAsistant = Char:WaitForChild("HumanoidRootPart"):WaitForChild("Helper", 9e9)
 	self.Higlight = Char:WaitForChild("AURAHIGHLIGHT", 9e9)
+	self.PlayerService = Knit.GetService("PlayerService")
 end
 
 function AttackController:KnitStart()

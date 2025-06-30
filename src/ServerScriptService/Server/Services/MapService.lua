@@ -8,7 +8,7 @@ local MapService = Knit.CreateService({ Name = "MapService", Client = {}, MapSta
 function MapService:StopMovingShip() end
 
 function MapService:StartMovingShip()
-	local ship: Model = workspace:WaitForChild("Ship")
+	--[[local ship: Model = workspace:WaitForChild("Ship")
 	local origin = workspace:WaitForChild("Map"):FindFirstChild("Origin")
 	local angle = 0
 	local timePassed = 0
@@ -39,7 +39,7 @@ function MapService:StartMovingShip()
 				ship.CFrame = finalCFrame
 			end
 		end)
-	end
+	end]]
 end
 
 function MapService:KnitInit() end
