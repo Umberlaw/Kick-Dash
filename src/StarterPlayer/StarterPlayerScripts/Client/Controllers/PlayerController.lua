@@ -439,6 +439,43 @@ function PlayerController:CameraNuance()
 	self.CameraNuanceTween:Play()
 end
 
+function PlayerController:LerpMovement()
+	local char = Char
+	local hrp = char.HumanoidRootPart
+	local torso = char.Torso
+
+	local RootJoint = hrp.RootJoint
+	local LeftHipJoint = torso["Left Hip"]
+	local RightHipJoint = torso["Right Hip"]
+	local Force = nil
+	local Direction = nil
+	local Value1 = 0
+	local Value2 = 0
+
+	local RootJointC0 = RootJoint.C0
+	local LeftHipJointC0 = LeftHipJoint.C0
+	local RightHipJointC0 = RightHipJoint.C0
+
+	RunService.RenderStepped:Connect(function(deltaTime)
+		Force = hrp.Velocity * Vector3.new(1, 0, 1)
+		if Force.Magnitude > 2 then
+			--> This represents the direction
+			Direction = Force.Unit
+			Value1 = hrp.CFrame.RightVector:Dot(Direction)
+			Value2 = hrp.CFrame.LookVector:Dot(Direction)
+		else
+			Value1 = 0
+			Value2 = 0
+		end
+
+		--> the values being multiplied are how much you want to rotate by
+		RootJoint.C0 =
+			RootJoint.C0:Lerp(RootJointC0 * CFrame.Angles(math.rad(Value2 * 18.25), math.rad(-Value1 * 10), 0), 0.2)
+		LeftHipJoint.C0 = LeftHipJoint.C0:Lerp(LeftHipJointC0 * CFrame.Angles(math.rad(Value1 * 16.25), 0, 0), 0.2)
+		RightHipJoint.C0 = RightHipJoint.C0:Lerp(RightHipJointC0 * CFrame.Angles(math.rad(-Value1 * 16.25), 0, 0), 0.2)
+	end)
+end
+
 function PlayerController:JumpNuance()
 	if self.Data.InSafeZone then
 		return
@@ -469,6 +506,7 @@ function PlayerController:KnitStart()
 	self:LoadPlayersAnimations()
 
 	self:SetCoreHuds()
+	self:LerpMovement()
 
 	RunService.RenderStepped:Connect(function()
 		self:CameraNuance()

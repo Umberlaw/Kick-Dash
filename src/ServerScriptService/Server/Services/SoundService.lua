@@ -52,30 +52,36 @@ function SoundService:PlaySound(player, soundData: table)
 		self:CreateSound(player, soundData)
 	end
 	if soundData.PlayingArea == "Server" then
+		print(soundData.SoundName, "Will Play")
+
 		self.PlayersSounds[player.UserId][soundData.SoundName]:Play()
 		for _, extraSounds: Sound in self.PlayersSounds[player.UserId][soundData.SoundName]:GetChildren() do
 			if extraSounds:IsA("Sound") then
 				extraSounds:Play()
 				task.delay(extraSounds.TimeLength, function()
+					local ExtraSoundoldVolume = extraSounds.Volume
 					local StopTween = TweenService:Create(
 						extraSounds,
-						TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0, false, 0),
+						TweenInfo.new(0.25, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0, false, 0),
 						{ Volume = 0 }
 					)
 					StopTween:Play()
 					StopTween.Completed:Wait()
+					extraSounds.Volume = ExtraSoundoldVolume
 					extraSounds:Stop()
 				end)
 			end
 		end
 		task.delay(soundData.PlayTime or 1, function()
+			local oldVolume = self.PlayersSounds[player.UserId][soundData.SoundName].Volume
 			local StopTween = TweenService:Create(
 				self.PlayersSounds[player.UserId][soundData.SoundName],
-				TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0, false, 0),
+				TweenInfo.new(0.25, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0, false, 0),
 				{ Volume = 0 }
 			)
 			StopTween:Play()
 			StopTween.Completed:Wait()
+			self.PlayersSounds[player.UserId][soundData.SoundName].Volume = oldVolume
 			self.PlayersSounds[player.UserId][soundData.SoundName]:Stop()
 		end)
 	elseif soundData.PlayingArea == "Client" then

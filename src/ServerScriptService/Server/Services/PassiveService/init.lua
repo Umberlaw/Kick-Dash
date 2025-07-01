@@ -89,7 +89,7 @@ function PassiveService:AddPassivePoint(player, PassiveType, IncreaseAmount)
 		if type(PlayerStylePassive) == "boolean" then
 			print("Kick Passive Active Zaten")
 		elseif PlayerStylePassive then
-			local targetStylePassive = Passives[PlayerStylePassive] or nil
+			local targetStylePassive = Passives[self.PlayerService.PlayerDatas[player.UserId].KickStyle] or nil
 
 			local newPlayerPassiveProgress = math.clamp(PlayerStylePassive + IncreaseAmount, 0, 3)
 			if newPlayerPassiveProgress >= 3 then
@@ -110,7 +110,7 @@ function PassiveService:AddPassivePoint(player, PassiveType, IncreaseAmount)
 		if type(PlayerAuraPassive) == "boolean" then
 			print("Aura Pasif Aktif Zaten")
 		elseif PlayerAuraPassive then
-			local targetAuraPassive = Passives[PlayerAuraPassive] or nil
+			local targetAuraPassive = Passives[self.PlayerService.PlayerDatas[player.UserId].Aura] or nil
 			local newPlayerPassiveProgress = math.clamp(PlayerAuraPassive + IncreaseAmount, 0, 3)
 			if newPlayerPassiveProgress >= 3 then
 				if not targetAuraPassive then

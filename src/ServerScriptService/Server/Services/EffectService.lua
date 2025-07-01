@@ -234,8 +234,8 @@ function EffectService:CreateEffect(player, targetEffect: table, targetDatas: ta
 	local targetingPart
 	if targetDatas.SpecialStatue and targetDatas.SpecialStatue == "PartCreate" then
 		targetingPart = Instance.new("Part")
-		targetingPart.Size = Vector3.new(4, 1, 2)
-		targetingPart.Position = player.Character["Right Leg"].Position
+		targetingPart.Size = targetDatas.PartSize or Vector3.new(4, 1, 2)
+		targetingPart.Position = targetDatas.PartPosition or player.Character["Right Leg"].Position
 		targetingPart.CanCollide = false
 		targetingPart.Anchored = true
 		targetingPart.Transparency = 1

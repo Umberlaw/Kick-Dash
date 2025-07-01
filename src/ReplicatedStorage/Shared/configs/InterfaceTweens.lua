@@ -169,7 +169,7 @@ function InterfaceTweens:FadeInOut(element: TextLabel, values: table)
 	return FadeInAnim, UIStrokeFadeInAnim, GrowTween, ShrinkTween, FadeOutTween, strokeFadeOutTween, ResetTween
 end
 
-function InterfaceTweens:TextIncrease(element: textLabel, values: table)
+function InterfaceTweens:TextIncrease(element: TextLabel, values: table)
 	local popUpScale = 1.15
 	local popDuration = 0.8
 

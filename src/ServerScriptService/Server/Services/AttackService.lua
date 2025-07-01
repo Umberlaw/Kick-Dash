@@ -42,6 +42,12 @@ function AttackService:Attack(player, hittedplayer, otherdatas, ragdollDatas)
 	self.PassiveService:AddPassivePoint(hittedplayer, "Style", 2)
 	self:GiveAttackBonuses(player, hittedplayer)
 	self:GiveHitBonusses(player, hittedplayer, ragdollDatas)
+	self.EffectService:CreateEffect(player, { AuraName = attackingPlayerDatas.Aura, EffectName = "Hit" }, {
+		EnabledTime = 1.45,
+		DiseabledTime = 1.74,
+		SpecialStatue = "PartCreate",
+		PartPosition = hittedplayer.Character.Torso.Position,
+	})
 end
 
 function AttackService:NPCAttack(player, HittedNPC, otherDatas, ragdollDatas)
@@ -61,6 +67,12 @@ function AttackService:NPCAttack(player, HittedNPC, otherDatas, ragdollDatas)
 		self.PassiveService:StartAuraPassive(player, { HittedPlayer = HittedNPC, otherDatas = otherDatas })
 	end
 	--self:GiveAttackBonuses(player, HittedNPC)
+	self.EffectService:CreateEffect(player, { AuraName = attackingPlayerDatas.Aura, EffectName = "Hit" }, {
+		EnabledTime = 1.45,
+		DiseabledTime = 1.74,
+		SpecialStatue = "PartCreate",
+		PartPosition = HittedNPC.Torso.Position,
+	})
 end
 
 function AttackService:StylePassiveRelease(player)
@@ -225,6 +237,7 @@ function AttackService:KnitInit()
 	self.PlayerService = Knit.GetService("PlayerService")
 	self.NotificationService = Knit.GetService("NotificationService")
 	self.RagdollService = Knit.GetService("RagdollService")
+	self.EffectService = Knit.GetService("EffectService")
 end
 
 function AttackService:KnitStart()

@@ -207,6 +207,11 @@ function AttackController:StartKickAttack(atackpower)
 											{ "tEST" }, --this for in the future
 											KnockBackDatas
 										)
+										local choosedSoundName = "KickHit" .. tostring(math.random(1, 2))
+										self.SoundController:PlaySoundInServer({
+											SoundName = choosedSoundName,
+											PlayingArea = "Server",
+										})
 									elseif
 										not game.Players:GetPlayerFromCharacter(allTouchingitems.Parent)
 										and allTouchingitems.CollisionGroup == "NPC"

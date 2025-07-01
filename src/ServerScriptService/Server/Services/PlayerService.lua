@@ -415,6 +415,7 @@ function PlayerService:SetPlayerDependicies(char)
 	end
 
 	hum:SetStateEnabled(Enum.HumanoidStateType.Swimming, false)
+	char.Parent = workspace:WaitForChild("PlayerCharacters")
 end
 
 function PlayerService:SetCollisionGroup(character: Model)
