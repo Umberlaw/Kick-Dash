@@ -88,7 +88,7 @@ local KickStyleDatas = {
 			},
 			Chance = 40,
 			HitboxTarget = { "Right Leg" },
-			Cosmetic = { DisplayName = "Wrestler", Font = "SpecialElite", Image = "rbxassetid://111433642312389" },
+			Cosmetic = { DisplayName = "Wrestler", Font = "Rye", Image = "rbxassetid://111433642312389" },
 		},
 
 		Tatsuma = {

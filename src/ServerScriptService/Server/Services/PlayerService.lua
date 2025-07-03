@@ -564,6 +564,9 @@ function PlayerService:CommandPanel(player)
 		elseif Command == "/H" then
 			local argument = string.sub(message, 4)
 			self.CommandService:UseCommand(player, "Health", argument)
+		elseif Command == "/B" then
+			local argument = "Burned"
+			self.CommandService:UseCommand(player, "AddBurned", argument)
 		end
 	end)
 end

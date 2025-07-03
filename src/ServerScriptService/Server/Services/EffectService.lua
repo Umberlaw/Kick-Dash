@@ -8,7 +8,11 @@ local InterfaceTweens = require(ReplicatedStorage.Shared.configs.InterfaceTweens
 
 local EffectService = Knit.CreateService({
 	Name = "EffectService",
-	Client = { SetAtmosphere = Knit.CreateSignal(), CreateEffect = Knit.CreateSignal() },
+	Client = {
+		SetAtmosphere = Knit.CreateSignal(),
+		CreateEffect = Knit.CreateSignal(),
+		CreateShake = Knit.CreateSignal(),
+	},
 	PlayerIndicators = {},
 	PlayerDebuffes = {},
 	PlayerEffects = {},
@@ -119,6 +123,10 @@ function EffectService:Clear(player, comingData)
 			self.PlayerDebuffes[player.UserId][debuffName] = nil
 		end
 	end
+end
+
+function EffectService:CreateShake(player, ShakeName)
+	self.Client.CreateShake:Fire(player, ShakeName)
 end
 
 function EffectService:SetIndicator(Player, PassiveType)

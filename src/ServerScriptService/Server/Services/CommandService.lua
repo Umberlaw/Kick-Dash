@@ -25,6 +25,8 @@ function CommandService:UseCommand(player, command, comingData)
 		end
 	elseif command == "Health" then
 		self.PlayerService:UpdatePlayerData(player, { Health = tonumber(comingData) })
+	elseif command == "AddBurned" then
+		self.StatusService:AddStatus(player, "Burned", { RemainingTime = 10 }, "Flameful", "Decreasing")
 	end
 end
 
@@ -32,6 +34,7 @@ function CommandService:KnitInit()
 	self.PlayerService = Knit.GetService("PlayerService")
 	self.PassiveService = Knit.GetService("PassiveService")
 	self.EffectService = Knit.GetService("EffectService")
+	self.StatusService = Knit.GetService("StatusService")
 end
 
 function CommandService:KnitStart()

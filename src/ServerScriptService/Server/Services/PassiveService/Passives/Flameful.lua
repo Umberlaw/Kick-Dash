@@ -84,7 +84,7 @@ function Flameful:CreateFlameRoad(player, StartPos, FinishPos)
 		end
 	end
 
-	FlameRoadModel.Touched:Connect(function(touchingobject)
+	local roadTouched = FlameRoadModel.Touched:Connect(function(touchingobject)
 		if touchingobject.Parent:FindFirstChild("Humanoid") then
 			local char = touchingobject.Parent
 			if self.AlreadyTouchedThings[char] then
@@ -103,11 +103,19 @@ function Flameful:CreateFlameRoad(player, StartPos, FinishPos)
 		end
 	end)
 
-	task.delay(15, function()
+	task.delay(20, function()
 		FlamefulRoadIdle:Stop()
+		roadTouched:Disconnect()
 		table.remove(self.FlameRoads[player.UserId], table.find(self.FlameRoads[player.UserId], FlameRoadModel))
-		FlameRoadModel:Destroy()
+		for _, allParticles in FlameRoadModel:GetChildren() do
+			if allParticles:IsA("ParticleEmitter") then
+				allParticles.Enabled = false
+			end
+		end
 		print(self.FlameRoads[player.UserId])
+		task.delay(1, function()
+			FlameRoadModel:Destroy()
+		end)
 	end)
 end
 

@@ -212,6 +212,7 @@ function AttackController:StartKickAttack(atackpower)
 											SoundName = choosedSoundName,
 											PlayingArea = "Server",
 										})
+										self.EffectController:CreateShake("Hit")
 									elseif
 										not game.Players:GetPlayerFromCharacter(allTouchingitems.Parent)
 										and allTouchingitems.CollisionGroup == "NPC"
@@ -222,6 +223,7 @@ function AttackController:StartKickAttack(atackpower)
 										self.ProtectSelfRagdoll = true
 										self.RagdollController:NPCRagdoll(allTouchingitems.Parent, KnockBackDatas) -- Burayada saldiri hasar rage pasif ssitemleri eklenecek
 										self.AttackService.NPCAttack:Fire(allTouchingitems.Parent, { "tEST" })
+										self.EffectController:CreateShake("Hit")
 										local choosedSoundName = "KickHit" .. tostring(math.random(1, 2))
 										self.SoundController:PlaySoundInServer({
 											SoundName = choosedSoundName,

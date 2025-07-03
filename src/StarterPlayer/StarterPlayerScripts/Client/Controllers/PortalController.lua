@@ -7,14 +7,14 @@ local Workspace = game:GetService("Workspace")
 
 local Knit = require(ReplicatedStorage.Packages.knit)
 local Promise = require(Knit.Util.Promise)
-local Portal = require(ReplicatedStorage.Packages.Portal)
+--local Portal = require(ReplicatedStorage.Packages.Portal)
 
 local PortalsFolder = Workspace:WaitForChild("Lobby"):WaitForChild("Portals")
 
 local PortalController = Knit.CreateController({ Name = "PortalController" })
 
 function PortalController:CreatePortal()
-	print("Portal kurulacak")
+	--[[print("Portal kurulacak")
 	print(PortalsFolder:GetChildren())
 	local portalA1 = PortalsFolder:FindFirstChild("PortalA") or PortalsFolder:WaitForChild("PortalA", 9e9)
 	local PortalB1 = PortalsFolder:FindFirstChild("PortalB")
@@ -128,7 +128,7 @@ function PortalController:CreatePortal()
 				onCharacterAdded(player, character)
 			end)
 		end)
-	end
+	end]]
 end
 
 function PortalController:KnitInit()

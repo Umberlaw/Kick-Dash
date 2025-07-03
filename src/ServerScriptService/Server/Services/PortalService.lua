@@ -6,7 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Knit = require(ReplicatedStorage.Packages.knit)
 local Promise = require(Knit.Util.Promise)
-local Portal = require(ReplicatedStorage.Packages.Portal)
+--local Portal = require(ReplicatedStorage.Packages.Portal)
 
 local PortalService =
 	Knit.CreateService({ Name = "PortalService", Client = { CreatePortal = Knit.CreateSignal() }, Portals = {} })
