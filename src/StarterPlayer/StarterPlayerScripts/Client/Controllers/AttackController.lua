@@ -70,6 +70,16 @@ function AttackController:SetHiglight(deltatime)
 	end
 end
 
+function AttackController:RemoveDash()
+	local DashVectorForce = Char.HumanoidRootPart:FindFirstChild("DASH")
+	if DashVectorForce then
+		DashVectorForce:Destroy()
+		self.DashCon:Disconnect()
+		self.DashCon = nil
+		self.SoundController:CloseTheSound("Dash")
+	end
+end
+
 function AttackController:Dash(dashpower: number)
 	local DashVectorForce = Instance.new("VectorForce")
 
@@ -77,6 +87,7 @@ function AttackController:Dash(dashpower: number)
 	DashVectorForce.RelativeTo = Enum.ActuatorRelativeTo.World
 	DashVectorForce.ApplyAtCenterOfMass = true
 	DashVectorForce.Parent = Char.HumanoidRootPart
+	DashVectorForce.Name = "DASH"
 	self.SoundController:PlaySoundOnlyClient({ SoundName = "Dash" })
 	self.EffectController:CreateEffect({ AuraName = self.PlayersAttackData.Aura, EffectName = "Dash" }, {
 		EnabledTime = math.round((dashpower / self.PlayersAttackData.MaxPower) * 10) / 10,
@@ -104,10 +115,7 @@ function AttackController:Dash(dashpower: number)
 		end)
 	end
 	task.delay(0.3, function()
-		DashVectorForce:Destroy()
-		self.DashCon:Disconnect()
-		self.DashCon = nil
-		self.SoundController:CloseTheSound("Dash")
+		self:RemoveDash()
 	end)
 end
 
@@ -193,15 +201,16 @@ function AttackController:StartKickAttack(atackpower)
 									local KnockBackDatas = {
 										Direction = Char.HumanoidRootPart.CFrame.LookVector,
 										KnockPower = atackpower,
-										RagdollDuration = 3,
+										RagdollDuration = 2.5,
 									}
 									if
 										game.Players:GetPlayerFromCharacter(allTouchingitems.Parent)
 										and not table.find(self.HittedChars, allTouchingitems.Parent)
+										and allTouchingitems.CollisionGroup ~= "RagdolledPlayers"
 									then
 										table.insert(self.HittedChars, allTouchingitems.Parent)
 										self.ProtectSelfRagdoll = true
-
+										self:RemoveDash()
 										self.AttackService.Attack:Fire(
 											game.Players:GetPlayerFromCharacter(allTouchingitems.Parent),
 											{ "tEST" }, --this for in the future
@@ -220,9 +229,14 @@ function AttackController:StartKickAttack(atackpower)
 										and allTouchingitems.Parent:FindFirstChild("Humanoid")
 									then
 										table.insert(self.HittedChars, allTouchingitems.Parent)
+										self:RemoveDash()
 										self.ProtectSelfRagdoll = true
 										self.RagdollController:NPCRagdoll(allTouchingitems.Parent, KnockBackDatas) -- Burayada saldiri hasar rage pasif ssitemleri eklenecek
-										self.AttackService.NPCAttack:Fire(allTouchingitems.Parent, { "tEST" })
+										self.AttackService.NPCAttack:Fire(
+											allTouchingitems.Parent,
+											{ "tEST" },
+											KnockBackDatas
+										)
 										self.EffectController:CreateShake("Hit")
 										local choosedSoundName = "KickHit" .. tostring(math.random(1, 2))
 										self.SoundController:PlaySoundInServer({
@@ -254,17 +268,8 @@ function AttackController:StartKickAttack(atackpower)
 						>= KickStyleDatas.Kicks[self.PlayersAttackData.KickStyle].Stats.RagdollPercent
 					and not self.ProtectSelfRagdoll
 				then
-					local KnockBackDatas = {
-						Direction = Char.HumanoidRootPart.CFrame.LookVector,
-						KnockPower = 25,
-						RagdollDuration = 3,
-					}
-
-					self.AttackService.Attack:Fire(
-						game.Players:GetPlayerFromCharacter(Char),
-						{ "tEST" },
-						KnockBackDatas
-					)
+					self.AttackService.SelfRagdoll:Fire(game.Players:GetPlayerFromCharacter(Char))
+					self:RemoveDash()
 					local targetSound = "Fail" .. tostring(math.random(1, 4))
 					self.SoundController:PlaySoundOnlyClient({ SoundName = targetSound })
 				end
@@ -292,6 +297,17 @@ function AttackController:StartKickPassiveAttack(atackpower)
 			self.AttackCon = nil
 			self.AttackPower = 0
 		end
+		self.SoundController:CloseTheSound("KickStyleEquip")
+		self.SoundController:CloseTheSound("KickStyleStart")
+		self.SoundController:CloseTheSound("KickStyleChargeUp")
+		self.SoundController:PlaySoundOnlyClient({ SoundName = "ChargeRelease" })
+		if
+			atackpower / self.PlayersAttackData.MaxPower
+			>= KickStyleDatas.Kicks[self.PlayersAttackData.KickStyle].Stats.RagdollPercent
+		then
+			self.SoundController:PlaySoundOnlyClient({ SoundName = "KickStyleCrack" })
+		end
+
 		self.PlayersAttackData.Animations.PreparePassive:Stop()
 		self.AnimationConnections["Prepare"]:Disconnect()
 		self.AnimationConnections["Locking"]:Disconnect()
@@ -305,6 +321,7 @@ function AttackController:StartKickPassiveAttack(atackpower)
 		self.AnimationConnections["AttackRelease"] = self.PlayersAttackData.Animations.AttackPassive
 			:GetMarkerReachedSignal("AttackRelease")
 			:Connect(function()
+				self.SoundController:PlaySoundOnlyClient({ SoundName = "Kick" })
 				local TargetData = KickStyleDatas.Kicks[self.PlayersAttackData.KickStyle]
 				if TargetData then
 					for _, AllHitboxes in TargetData.HitboxTarget do
@@ -337,6 +354,12 @@ function AttackController:StartKickPassiveAttack(atackpower)
 											{ "tEST" },
 											KnockBackDatas
 										)
+
+										self.SoundController:PlaySoundInServer({
+											SoundName = "KickStyleHit",
+											PlayingArea = "Server",
+										})
+										self.EffectController:CreateShake("Hit")
 									elseif
 										not game.Players:GetPlayerFromCharacter(allTouchingitems.Parent)
 										and allTouchingitems.CollisionGroup == "NPC"
@@ -346,7 +369,16 @@ function AttackController:StartKickPassiveAttack(atackpower)
 										table.insert(self.HittedChars, allTouchingitems.Parent)
 										self.ProtectSelfRagdoll = true
 										self.RagdollController:NPCRagdoll(allTouchingitems.Parent, KnockBackDatas) -- Burayada saldiri hasar rage pasif ssitemleri eklenecek
-										self.AttackService.NPCAttack:Fire(allTouchingitems.Parent, { "tEST" })
+										self.AttackService.NPCAttack:Fire(
+											allTouchingitems.Parent,
+											{ "tEST" },
+											KnockBackDatas
+										)
+										self.SoundController:PlaySoundInServer({
+											SoundName = "KickStyleHit",
+											PlayingArea = "Server",
+										})
+										self.EffectController:CreateShake("Hit")
 									end
 								end
 								task.wait()
@@ -372,16 +404,10 @@ function AttackController:StartKickPassiveAttack(atackpower)
 						>= KickStyleDatas.Kicks[self.PlayersAttackData.KickStyle].Stats.RagdollPercent
 					and not self.ProtectSelfRagdoll
 				then
-					local KnockBackDatas = {
-						Direction = Char.HumanoidRootPart.CFrame.LookVector,
-						KnockPower = 25,
-						RagdollDuration = 3,
-					}
-					self.AttackService.Attack:Fire(
-						game.Players:GetPlayerFromCharacter(Char),
-						{ "tEST" },
-						KnockBackDatas
-					)
+					self.AttackService.SelfRagdoll:Fire(game.Players:GetPlayerFromCharacter(Char))
+					self:RemoveDash()
+					local targetSound = "Fail" .. tostring(math.random(1, 4))
+					self.SoundController:PlaySoundOnlyClient({ SoundName = targetSound })
 				end
 				self.ProtectSelfRagdoll = false
 			end)
@@ -432,9 +458,11 @@ function AttackController:KickAttack()
 					and not self.PlayersAttackData.InSafeZone
 				then
 					self.AttackPower = 0
+
 					self.SoundController:PlaySoundOnlyClient({ SoundName = "Equip" })
 					self.SoundController:PlaySoundOnlyClient({ SoundName = "ChargeStart" })
 					self.SoundController:PlaySoundOnlyClient({ SoundName = "ChargeUp" })
+
 					if self.CameraCon then
 						self.CameraCon:Disconnect()
 						self.CameraCon = nil
@@ -515,6 +543,10 @@ function AttackController:KickAttack()
 						self.CameraCon:Disconnect()
 						self.CameraCon = nil
 					end
+
+					self.SoundController:PlaySoundOnlyClient({ SoundName = "KickStyleEquip" })
+					self.SoundController:PlaySoundOnlyClient({ SoundName = "KickStyleStart" })
+					self.SoundController:PlaySoundOnlyClient({ SoundName = "KickStyleChargeUp" })
 					self.HiglightStatus = "Attack"
 					self.AttackCon = RunService.RenderStepped:Connect(function(dt)
 						self.AttackPower += dt * 32

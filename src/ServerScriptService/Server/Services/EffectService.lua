@@ -294,6 +294,10 @@ function EffectService:CreateEffect(player, targetEffect: table, targetDatas: ta
 		for _, allTargetParticles in self.PlayerEffects[player.UserId][ClonnedEffect]:GetChildren() do
 			print(allTargetParticles.Enabled)
 			allTargetParticles.Enabled = true
+			print(targetDatas.ParticleSize, targetDatas)
+			allTargetParticles.Size = if targetDatas.ParticleSize
+				then NumberSequence.new(targetDatas.ParticleSize)
+				else allTargetParticles.Size
 			print(allTargetParticles.Enabled)
 		end
 	elseif ClonnedEffect:IsA("ParticleEmitter") then

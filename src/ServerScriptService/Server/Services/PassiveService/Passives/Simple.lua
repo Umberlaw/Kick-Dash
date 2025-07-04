@@ -11,17 +11,22 @@ function Simple:Start(player, otherDatas)
 	local HittedPlayer = otherDatas.HittedPlayer or nil
 	local SimpleEffectFolder = ReplicatedStorage.Shared.Assets.VFX.Passives.Auras:FindFirstChild("Simple")
 	local effectTable = {}
-	if SimpleEffectFolder then
-		for _, allEffects in SimpleEffectFolder:GetChildren() do
-			local clonnedEffect = allEffects:Clone()
-			clonnedEffect.Parent = if player.Character then player.Character.Torso else player.Torso
-			clonnedEffect.Enabled = true
-			table.insert(effectTable, clonnedEffect)
-		end
-	end
+
 	if not HittedPlayer then
 		warn("Vuracak Kimse yok")
 	elseif HittedPlayer then
+		if SimpleEffectFolder then
+			for _, allEffects in SimpleEffectFolder:GetChildren() do
+				local clonnedEffect = allEffects:Clone()
+				clonnedEffect.Parent = if not otherDatas.HittedPlayer:FindFirstChild("Humanoid")
+					then otherDatas.HittedPlayer.Character.Torso
+					else otherDatas.HittedPlayer.Torso
+				clonnedEffect.Enabled = true
+				table.insert(effectTable, clonnedEffect)
+			end
+		else
+			print("Effect YOOOK")
+		end
 		local RagdollDatas =
 			{ Direction = player.Character.HumanoidRootPart.CFrame.LookVector, KnockPower = 35, RagdollDuration = 3 }
 

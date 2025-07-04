@@ -11,6 +11,7 @@ local AttackService = Knit.CreateService({
 		Attack = Knit.CreateSignal(),
 		PassiveRelease = Knit.CreateSignal(),
 		NPCAttack = Knit.CreateSignal(),
+		SelfRagdoll = Knit.CreateSignal(),
 	},
 })
 
@@ -47,6 +48,7 @@ function AttackService:Attack(player, hittedplayer, otherdatas, ragdollDatas)
 		DiseabledTime = 1.74,
 		SpecialStatue = "PartCreate",
 		PartPosition = hittedplayer.Character.Torso.Position,
+		ParticleSize = math.clamp((ragdollDatas.KnockPower or 0 / attackingPlayerDatas.MaxPower) * 5, 2, 5),
 	})
 end
 
@@ -67,11 +69,13 @@ function AttackService:NPCAttack(player, HittedNPC, otherDatas, ragdollDatas)
 		self.PassiveService:StartAuraPassive(player, { HittedPlayer = HittedNPC, otherDatas = otherDatas })
 	end
 	--self:GiveAttackBonuses(player, HittedNPC)
+	print(ragdollDatas)
 	self.EffectService:CreateEffect(player, { AuraName = attackingPlayerDatas.Aura, EffectName = "Hit" }, {
 		EnabledTime = 1.45,
 		DiseabledTime = 1.74,
 		SpecialStatue = "PartCreate",
 		PartPosition = HittedNPC.Torso.Position,
+		ParticleSize = math.clamp((ragdollDatas.KnockPower or 0 / attackingPlayerDatas.MaxPower) * 5, 2, 5),
 	})
 end
 
@@ -254,8 +258,15 @@ function AttackService:KnitStart()
 			self:AuraPassiveRelease(player)
 		end
 	end)
-	self.Client.NPCAttack:Connect(function(player, HittedNPC, otherdatas)
-		self:NPCAttack(player, HittedNPC, otherdatas)
+	self.Client.NPCAttack:Connect(function(player, HittedNPC, otherdatas, knockbackdatas)
+		self:NPCAttack(player, HittedNPC, otherdatas, knockbackdatas)
+	end)
+	self.Client.SelfRagdoll:Connect(function(player)
+		self.RagdollService:RagdollStatus(
+			player,
+			true,
+			{ Direction = player.Character.HumanoidRootPart.CFrame.LookVector, KnockPower = 5, RagdollDuration = 1.5 }
+		)
 	end)
 end
 

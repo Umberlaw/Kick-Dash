@@ -35,6 +35,7 @@ function Push:Start(player, otherdatas)
 				player,
 				{ HittedPlayer = otherdatas.hittingplayer, otherDatas = otherdatas.otherdatas }
 			)
+			self.Services["PlayerService"]:UpdatePlayerData(player, { FusionPassive = false })
 		end
 	else
 		self.Services["RagdollService"]:NPCRagdoll(otherdatas.hittingplayer, true, ragdoll)

@@ -77,7 +77,7 @@ function PassiveService:AddPassivePoint(player, PassiveType, IncreaseAmount)
 		self.PlayerService.PlayerDatas[player.UserId]
 		and self.PlayerService.PlayerDatas[player.UserId]["FusionPassive"]
 	then
-		warn("Player Coktan Full set olmus")
+		warn("Fusion Pasif aktif ama devami gelmemis daha ")
 		return
 	end
 	local PlayerStylePassive = self.PlayerService.PlayerDatas[player.UserId].StylePassive or nil
@@ -129,7 +129,7 @@ function PassiveService:AddPassivePoint(player, PassiveType, IncreaseAmount)
 
 	if type(PlayerKickPassiveProgress) == "boolean" and type(PlayerAuraPassiveProgress) == "boolean" then
 		print("Fusion Tetiklenebilir artik")
-		fusionPassive = true
+		fusionPassive = false
 	end
 
 	if fusionPassive then

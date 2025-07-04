@@ -440,15 +440,15 @@ function PlayerService:PlayerConnections(player)
 				warn("Data yok")
 				return
 			end
-			if math.floor(char.Humanoid.MoveDirection.Magnitude) > 0 and not playersTargetData.InSafeZone then
+			--[[if math.floor(char.Humanoid.MoveDirection.Magnitude) > 0 and not playersTargetData.InSafeZone then
 				if counter > 0 then
 					counter = -1
 				end
 				local decreasingStamina = math.clamp(playersTargetData.Stamina - 1, 0, playersTargetData.MaximumStamina)
 				if decreasingStamina ~= playersTargetData.Stamina then
 					self:UpdatePlayerData(player, { Stamina = decreasingStamina })
-				end
-			elseif math.floor(char.Humanoid.MoveDirection.Magnitude) <= 0 or playersTargetData.InSafeZone then
+				end]]
+			if math.floor(char.Humanoid.MoveDirection.Magnitude) <= 0 or playersTargetData.InSafeZone then
 				if counter < 0 then
 					counter = 1
 				end
