@@ -24,12 +24,12 @@ local Shakes = {}
 
 Shakes.Hit = {
 	Amplitude = 1,
-	Frequency = 0.225,
+	Frequency = 0.25,
 	FadeInTime = 0,
-	FadeOutTime = 0.275,
+	FadeOutTime = 0.175,
 	Sustained = false,
-	SustainTime = 0.45,
-	PositionInfluence = Vector3.one,
+	SustainTime = 0.325,
+	PositionInfluence = Vector3.new(0, 5, -1.25),
 	RotationInfluence = Vector3.new(5, 5, 5),
 }
 

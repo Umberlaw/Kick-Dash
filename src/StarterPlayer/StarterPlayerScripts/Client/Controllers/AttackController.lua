@@ -77,6 +77,7 @@ function AttackController:RemoveDash()
 		self.DashCon:Disconnect()
 		self.DashCon = nil
 		self.SoundController:CloseTheSound("Dash")
+		Char.HumanoidRootPart.AssemblyLinearVelocity = Char.HumanoidRootPart.AssemblyLinearVelocity * 0.85
 	end
 end
 
@@ -360,6 +361,7 @@ function AttackController:StartKickPassiveAttack(atackpower)
 											PlayingArea = "Server",
 										})
 										self.EffectController:CreateShake("Hit")
+										self:RemoveDash()
 									elseif
 										not game.Players:GetPlayerFromCharacter(allTouchingitems.Parent)
 										and allTouchingitems.CollisionGroup == "NPC"
@@ -379,6 +381,7 @@ function AttackController:StartKickPassiveAttack(atackpower)
 											PlayingArea = "Server",
 										})
 										self.EffectController:CreateShake("Hit")
+										self:RemoveDash()
 									end
 								end
 								task.wait()
@@ -622,6 +625,9 @@ function AttackController:KickAttack()
 				self.SoundController:CloseTheSound("Equip")
 				self.SoundController:CloseTheSound("ChargeStart")
 				self.SoundController:CloseTheSound("ChargeUp")
+				self.SoundController:CloseTheSound("KickStyleStart")
+				self.SoundController:CloseTheSound("KickStyleEquip")
+				self.SoundController:CloseTheSound("KickStyleChargeUp")
 				if self.HiglightStatus ~= "Default" then
 					self.HiglightStatus = "Default"
 					self:SetHiglight(0)

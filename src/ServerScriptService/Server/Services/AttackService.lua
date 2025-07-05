@@ -46,9 +46,8 @@ function AttackService:Attack(player, hittedplayer, otherdatas, ragdollDatas)
 	self.EffectService:CreateEffect(player, { AuraName = attackingPlayerDatas.Aura, EffectName = "Hit" }, {
 		EnabledTime = 1.45,
 		DiseabledTime = 1.74,
-		SpecialStatue = "PartCreate",
-		PartPosition = hittedplayer.Character.Torso.Position,
 		ParticleSize = math.clamp((ragdollDatas.KnockPower or 0 / attackingPlayerDatas.MaxPower) * 5, 2, 5),
+		Target = hittedplayer.Character.Torso,
 	})
 end
 
@@ -73,9 +72,8 @@ function AttackService:NPCAttack(player, HittedNPC, otherDatas, ragdollDatas)
 	self.EffectService:CreateEffect(player, { AuraName = attackingPlayerDatas.Aura, EffectName = "Hit" }, {
 		EnabledTime = 1.45,
 		DiseabledTime = 1.74,
-		SpecialStatue = "PartCreate",
-		PartPosition = HittedNPC.Torso.Position,
 		ParticleSize = math.clamp((ragdollDatas.KnockPower or 0 / attackingPlayerDatas.MaxPower) * 5, 2, 5),
+		Target = HittedNPC.Torso,
 	})
 end
 
@@ -119,7 +117,7 @@ function AttackService:GiveHitBonusses(hittingplayer, hittedplayer, RagdollDatas
 
 	if KickDamage then
 		if playerDatas.OverHealth ~= 0 then
-			local LeftingOverHealth = math.clamp(playerDatas.OverHealth - KickDamage, 0, 100)
+			local LeftingOverHealth = math.clamp(playerDatas.OverHealth - 1, 0, 100)
 			if LeftingOverHealth == 0 then
 				self.PlayerService:UpdatePlayerData(hittedplayer, {
 					OverHealth = 0,
@@ -128,13 +126,13 @@ function AttackService:GiveHitBonusses(hittingplayer, hittedplayer, RagdollDatas
 			end
 		elseif playerDatas.OverHealth <= 0 then
 			self.PlayerService:UpdatePlayerData(hittedplayer, {
-				Health = math.clamp(playerDatas.Health - KickDamage, 0, playerDatas.MaximumHealth),
+				Health = math.clamp(playerDatas.Health - 1, 0, playerDatas.MaximumHealth),
 				Stamina = math.clamp(playerDatas.Stamina - 20, 0, playerDatas.MaximumStamina),
 			})
-			local remainingHP = math.clamp(playerDatas.Health - KickDamage, 0, playerDatas.MaximumHealth)
+			local remainingHP = math.clamp(playerDatas.Health - 1, 0, playerDatas.MaximumHealth)
 			if remainingHP <= 0 then
 				print("Buradan aldin KickHiti", remainingHP, KickDamage, playerDatas.Health)
-				self:Knockout(hittingplayer, hittedplayer, math.floor((KickDamage / playerDatas.MaximumHealth) * 100))
+				self:Knockout(hittingplayer, hittedplayer, math.floor((1 / playerDatas.MaximumHealth) * 100))
 			elseif remainingHP > 0 then
 				print(
 					"BEN BUNA RAGDOLL VERECEGIM",
@@ -155,6 +153,7 @@ function AttackService:GiveHitBonusses(hittingplayer, hittedplayer, RagdollDatas
 			end
 		end
 	end
+	self.EffectService:CreateVignette(hittedplayer, nil, nil)
 end
 
 function AttackService:GiveDamage(DamagingPlayer, comingDamage)

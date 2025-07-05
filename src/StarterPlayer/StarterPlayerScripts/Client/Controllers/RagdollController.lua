@@ -17,7 +17,11 @@ function RagdollController:StartRagdollTest()
 		KnockPower = 100,
 		RagdollDuration = 3,
 	}
-	self.RagdollService.Ragdoll:Fire(Player, TestRagdollDatas)
+	self.AttackService.Attack:Fire(
+		Player,
+		{ "tEST" }, --this for in the future
+		TestRagdollDatas
+	)
 end
 
 function RagdollController:RagdollChar(Char: Model, ragdollData)
@@ -39,6 +43,7 @@ end
 
 function RagdollController:KnitInit()
 	self.RagdollService = Knit.GetService("RagdollService")
+	self.AttackService = Knit.GetService("AttackService")
 end
 
 function RagdollController:KnitStart()

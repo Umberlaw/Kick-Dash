@@ -12,6 +12,7 @@ local EffectService = Knit.CreateService({
 		SetAtmosphere = Knit.CreateSignal(),
 		CreateEffect = Knit.CreateSignal(),
 		CreateShake = Knit.CreateSignal(),
+		CreateVignette = Knit.CreateSignal(),
 	},
 	PlayerIndicators = {},
 	PlayerDebuffes = {},
@@ -127,6 +128,10 @@ end
 
 function EffectService:CreateShake(player, ShakeName)
 	self.Client.CreateShake:Fire(player, ShakeName)
+end
+
+function EffectService:CreateVignette(player, status, targetValue)
+	self.Client.CreateVignette:Fire(player, status, targetValue)
 end
 
 function EffectService:SetIndicator(Player, PassiveType)
