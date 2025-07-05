@@ -674,6 +674,7 @@ function AttackController:KickAttack()
 		end
 		local success, _ = self.PlayerService:JumpStamina(Player)
 		if not success then
+			print(_)
 			Char.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
 			return
 		end

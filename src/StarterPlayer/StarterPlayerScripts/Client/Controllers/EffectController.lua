@@ -1,7 +1,6 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Lighting = game:GetService("Lighting")
-local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
 local Knit = require(ReplicatedStorage.Packages.knit)
@@ -64,7 +63,7 @@ function EffectController:CreateShake(ShakePreset)
 	shake.RotationInfluence = ShakeConfig[ShakePreset].RotationInfluence or Vector3.new(0, 0.5, 0)
 	shake.PositionInfluence = ShakeConfig[ShakePreset].PositionInfluence or Vector3.one
 	shake:Start()
-	shake:BindToRenderStep(shake.NextRenderName(), Enum.RenderPriority.Last.Value, function(pos, rot, isDone)
+	shake:BindToRenderStep(shake.NextRenderName(), Enum.RenderPriority.Last.Value, function(pos, rot, _)
 		workspace.CurrentCamera.CFrame *= CFrame.new(pos) * CFrame.Angles(
 			math.rad(rot.X),
 			math.rad(rot.Y),
@@ -74,7 +73,11 @@ function EffectController:CreateShake(ShakePreset)
 end
 
 function EffectController:DamageVignette(status, targetValue)
+	print("Baslatildi", status)
 	local DmgVignetteFrame = PlayerGui:WaitForChild("CoreHUD"):WaitForChild("DmgVignette")
+	if not DmgVignetteFrame.Visible then
+		DmgVignetteFrame.Visible = true
+	end
 	local DmgAppearTween = TweenService:Create(
 		DmgVignetteFrame,
 		TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 0),
@@ -91,13 +94,18 @@ function EffectController:DamageVignette(status, targetValue)
 		{ GroupTransparency = 1 }
 	)
 	DmgAppearTween:Play()
-	DmgAppearTween.Completed:Once(function(playbackState)
+	DmgAppearTween.Completed:Once(function()
 		DmginTween:Play()
 		task.delay(2.5, function()
 			DmginTween:Cancel()
 			DmginTween:Destroy()
 			DmgDisAppearTween:Play()
 		end)
+	end)
+	DmgDisAppearTween.Completed:Once(function()
+		DmgVignetteFrame.Visible = false
+		DmgDisAppearTween:Destroy()
+		DmgAppearTween:Destroy()
 	end)
 end
 

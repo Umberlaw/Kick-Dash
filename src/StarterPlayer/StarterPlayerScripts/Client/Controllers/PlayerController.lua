@@ -440,9 +440,10 @@ function PlayerController:CameraNuance()
 end
 
 function PlayerController:LerpMovement()
+	print(Char)
 	local char = Char
 	local hrp = char.HumanoidRootPart
-	local torso = char.Torso
+	local torso = char:WaitForChild("Torso")
 
 	local RootJoint = hrp.RootJoint
 	local LeftHipJoint = torso["Left Hip"]

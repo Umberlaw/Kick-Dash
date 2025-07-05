@@ -31,7 +31,6 @@ function Flameful:Start(player, otherdatas)
 		"Flameful",
 		"Decreasing"
 	)
-	print(otherdatas)
 	for _, AllEffects in FlamefulRoadAsset.OnLaunch:GetChildren() do
 		print(AllEffects)
 		local clonnedEffect = AllEffects:Clone()

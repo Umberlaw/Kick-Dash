@@ -19,10 +19,9 @@ local PlayerService = Knit.CreateService({
 		HealthUpdate = Knit.CreateSignal(),
 		StaminaUpdate = Knit.CreateSignal(),
 	},
-	PlayerDatas = {},
+	PlayerDatas = {}, --self.PlayerService.PlayerDatas[player.UserId] or nil
 	PlayerCons = {},
 })
-
 ---General Player Events---------
 function PlayerService:Knocked(knockedPlayer)
 	local knockDatas = { Knocked = true, WalkSpeed = 0, Ragdoll = 0 }
@@ -322,6 +321,7 @@ function PlayerService:LoadPlayersData(player)
 				Knocked = false,
 				RageActive = false,
 				InSafeZone = true,
+				StaminaRecharge = false,
 			}
 			self:UpdatePlayerData(player, UpdatingDataTable)
 		end)
@@ -429,6 +429,7 @@ end
 function PlayerService:PlayerConnections(player)
 	local char = player.Character
 	local counter = 1
+	local oldStamina = 0
 
 	if not self.PlayerCons[player.UserId] then
 		self.PlayerCons[player.UserId] = {}
@@ -440,15 +441,10 @@ function PlayerService:PlayerConnections(player)
 				warn("Data yok")
 				return
 			end
-			--[[if math.floor(char.Humanoid.MoveDirection.Magnitude) > 0 and not playersTargetData.InSafeZone then
-				if counter > 0 then
-					counter = -1
-				end
-				local decreasingStamina = math.clamp(playersTargetData.Stamina - 1, 0, playersTargetData.MaximumStamina)
-				if decreasingStamina ~= playersTargetData.Stamina then
-					self:UpdatePlayerData(player, { Stamina = decreasingStamina })
-				end]]
-			if math.floor(char.Humanoid.MoveDirection.Magnitude) <= 0 or playersTargetData.InSafeZone then
+			if oldStamina > playersTargetData.Stamina then
+				counter = 1
+			end
+			if playersTargetData.InSafeZone or not playersTargetData.StaminaRecharging then
 				if counter < 0 then
 					counter = 1
 				end
@@ -458,6 +454,17 @@ function PlayerService:PlayerConnections(player)
 				counter = math.clamp(counter + 1, 1, 10)
 				if decreasingStamina ~= playersTargetData.Stamina then
 					self:UpdatePlayerData(player, { Stamina = decreasingStamina })
+					oldStamina = decreasingStamina
+				end
+			elseif playersTargetData.StaminaRecharging then
+				local increasing = math.clamp(
+					playersTargetData.Stamina + (playersTargetData.Stamina / playersTargetData.MaximumStamina) * 10,
+					0,
+					playersTargetData.MaximumStamina
+				)
+				if increasing ~= playersTargetData.Stamina then
+					self:UpdatePlayerData(player, { Stamina = increasing })
+					oldStamina = increasing
 				end
 			end
 		end
@@ -465,18 +472,34 @@ function PlayerService:PlayerConnections(player)
 	self.PlayerCons[player.UserId]["WalkSpeed"] = task.spawn(function()
 		while task.wait(0.3) do
 			local targetPlayerData = self.PlayerDatas[player.UserId]
-			local char = player.Character
+			if targetPlayerData.StaminaRecharge then
+				print("STAMINARECHARGE CHECKLENIYOR")
+				if (targetPlayerData.Stamina / targetPlayerData.MaximumStamina) >= 1 then
+					targetPlayerData.StaminaRecharge = false
+					self:UpdatePlayerData(player, { StaminaRecharge = false })
+					print("KAPATILDI")
+				end
+			end
 			if not targetPlayerData then
 				warn("Data yok")
 				return
 			end
-			if targetPlayerData.Stamina <= 0 then
+			if targetPlayerData.StaminaRecharge then
 				if targetPlayerData.WalkSpeed > 16 then
 					self:UpdatePlayerData(player, { WalkSpeed = 16 })
+					player.Character.Humanoid.JumpPower = 0
 				end
-			elseif targetPlayerData.Stamina > 0 then
+			elseif (targetPlayerData.Stamina / targetPlayerData.MaximumStamina) <= 0.02 then
+				self:UpdatePlayerData(player, { StaminaRecharge = true })
+			elseif (targetPlayerData.Stamina / targetPlayerData.MaximumStamina) <= 0.3 then
+				if targetPlayerData.WalkSpeed > 16 then
+					self:UpdatePlayerData(player, { WalkSpeed = 16 })
+					player.Character.Humanoid.JumpPower = 35
+				end
+			elseif (targetPlayerData.Stamina / targetPlayerData.MaximumStamina) > 0.3 then
 				if targetPlayerData.WalkSpeed == 16 then
 					self:UpdatePlayerData(player, { WalkSpeed = 25 })
+					player.Character.Humanoid.JumpPower = 50
 				end
 			end
 			char.Humanoid.WalkSpeed = targetPlayerData.WalkSpeed
@@ -577,13 +600,13 @@ function PlayerService:Jump(comingplayer)
 			if self.PlayerDatas[comingplayer.UserId].InSafeZone then
 				resolve()
 			else
-				local leftingStamina =
-					math.clamp(self.PlayerDatas[comingplayer.UserId].Stamina - (math.round((20 / 3))), -1, math.huge)
+				local leftingStamina = math.clamp(self.PlayerDatas[comingplayer.UserId].Stamina - 3, -1, math.huge)
+				if self.PlayerDatas[comingplayer.UserId].StaminaRecharge then
+					reject("Rechargeda ziplanamaz")
+				end
 				if leftingStamina >= 0 then
 					self:UpdatePlayerData(comingplayer, { Stamina = leftingStamina })
 					resolve()
-				else
-					reject("Dont have enough stamina")
 				end
 			end
 		else

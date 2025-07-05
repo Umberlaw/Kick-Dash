@@ -131,6 +131,7 @@ function EffectService:CreateShake(player, ShakeName)
 end
 
 function EffectService:CreateVignette(player, status, targetValue)
+	print("Vignette Creating ")
 	self.Client.CreateVignette:Fire(player, status, targetValue)
 end
 
@@ -274,9 +275,6 @@ function EffectService:CreateEffect(player, targetEffect: table, targetDatas: ta
 				"EnableTime",
 				ClonnedEffect:GetAttribute("EnableTime") * targetDatas.EnabledTime * 10
 			)
-			print(targetDatas.EnabledTime)
-			print(ClonnedEffect:GetAttribute("EnableTime"), targetDatas.EnabledTime)
-			print(ClonnedEffect:GetAttribute("EnableTime") * targetDatas.EnabledTime)
 		end
 		if ClonnedEffect:GetAttribute("DisableTime") then
 			ClonnedEffect:SetAttribute(
@@ -297,13 +295,14 @@ function EffectService:CreateEffect(player, targetEffect: table, targetDatas: ta
 	print("Createlendi")
 	if ClonnedEffect:IsA("Attachment") then
 		for _, allTargetParticles in self.PlayerEffects[player.UserId][ClonnedEffect]:GetChildren() do
-			print(allTargetParticles.Enabled)
 			allTargetParticles.Enabled = true
+			if targetDatas.ParticleType == "Emit" then
+				allTargetParticles:Emit(allTargetParticles.Rate)
+			end
 			print(targetDatas.ParticleSize, targetDatas)
 			allTargetParticles.Size = if targetDatas.ParticleSize
 				then NumberSequence.new(targetDatas.ParticleSize)
 				else allTargetParticles.Size
-			print(allTargetParticles.Enabled)
 		end
 	elseif ClonnedEffect:IsA("ParticleEmitter") then
 		ClonnedEffect.Enabled = true

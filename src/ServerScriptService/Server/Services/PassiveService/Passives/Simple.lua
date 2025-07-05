@@ -22,6 +22,7 @@ function Simple:Start(player, otherDatas)
 					then otherDatas.HittedPlayer.Character.Torso
 					else otherDatas.HittedPlayer.Torso
 				clonnedEffect.Enabled = true
+				--clonnedEffect:Emit(clonnedEffect.Rate)
 				table.insert(effectTable, clonnedEffect)
 			end
 		else
@@ -39,7 +40,7 @@ function Simple:Start(player, otherDatas)
 		end
 		print("Ragdolladim")
 	end
-	task.delay(1, function()
+	task.delay(0.75, function()
 		for _, allEffects in effectTable do
 			allEffects.Enabled = false
 			task.delay(1, function()

@@ -241,6 +241,7 @@ function AttackService:KnitInit()
 	self.NotificationService = Knit.GetService("NotificationService")
 	self.RagdollService = Knit.GetService("RagdollService")
 	self.EffectService = Knit.GetService("EffectService")
+	self.RageService = Knit.GetService("RageService")
 end
 
 function AttackService:KnitStart()
