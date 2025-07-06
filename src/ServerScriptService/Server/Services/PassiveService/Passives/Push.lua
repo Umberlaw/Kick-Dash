@@ -17,6 +17,7 @@ function Push:Start(player, otherdatas)
 	self.Services["PassiveService"] = self.Services["PassiveService"] or Knit.GetService("PassiveService")
 
 	local playerData = self.Services["PlayerService"].PlayerDatas[player.UserId] or nil
+	local VFXFolder = ReplicatedStorage.Shared.Assets.VFX.Passives.KickStyle.Push
 	if not playerData then
 		warn("PLAYER DATA YOK ")
 		return
@@ -29,6 +30,26 @@ function Push:Start(player, otherdatas)
 			RagdollDuration = 4,
 		}
 	if game.Players:FindFirstChild(otherdatas.hittingplayer.Name) then
+		local HitVfx = VFXFolder:FindFirstChild("OnHit"):Clone()
+		HitVfx.Parent = player.Character.Torso
+		HitVfx.Enabled = true
+		task.delay(0.1, function()
+			HitVfx.Enabled = false
+			task.delay(0.4, function()
+				HitVfx:Destroy()
+			end)
+		end)
+
+		local OnFlight = VFXFolder:FindFirstChild("OnFlight"):Clone()
+		OnFlight.Parent = otherdatas.hittingplayer.Character.Torso
+		OnFlight.Enabled = true
+		task.delay(1.4, function()
+			OnFlight.Enabled = false
+			task.delay(0.4, function()
+				OnFlight:Destroy()
+			end)
+		end)
+
 		self.Services["RagdollService"]:RagdollStatus(otherdatas.hittingplayer, true, ragdoll)
 		if playerData.FusionPassive then
 			self.Services["PassiveService"]:StartAuraPassive(
@@ -38,6 +59,25 @@ function Push:Start(player, otherdatas)
 			self.Services["PlayerService"]:UpdatePlayerData(player, { FusionPassive = false })
 		end
 	else
+		local HitVfx = VFXFolder:FindFirstChild("OnHit"):Clone()
+		HitVfx.Parent = player.Character.Torso
+		HitVfx.Enabled = true
+		task.delay(0.1, function()
+			HitVfx.Enabled = false
+			task.delay(0.4, function()
+				HitVfx:Destroy()
+			end)
+		end)
+
+		local OnFlight = VFXFolder:FindFirstChild("OnFlight"):Clone()
+		OnFlight.Parent = otherdatas.hittingplayer.Torso
+		OnFlight.Enabled = true
+		task.delay(1.4, function()
+			OnFlight.Enabled = false
+			task.delay(0.4, function()
+				OnFlight:Destroy()
+			end)
+		end)
 		self.Services["RagdollService"]:NPCRagdoll(otherdatas.hittingplayer, true, ragdoll)
 		if playerData.FusionPassive then
 			self.Services["PassiveService"]:StartAuraPassive(

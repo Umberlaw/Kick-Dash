@@ -45,7 +45,9 @@ function Burned:Active(player, _, _)
 	end
 
 	if not self.OpenedTaskes[player.UserId] then
-		local effectsTable = {}
+		local HitParticle = nil
+		local HitSFX = nil
+		local VFXTable = {}
 		local SfxTable = {}
 		local SfxTargetFolder = ReplicatedStorage.Shared.Assets.SFX.Status.Burned
 		local targetParticleFolder = ReplicatedStorage.Shared.Assets.VFX.Particles.StatusEffects.Burned
@@ -56,9 +58,12 @@ function Burned:Active(player, _, _)
 				clonnedEffect.Parent = player.Character.Torso
 				if clonnedEffect.Name == "FireLoop" then
 					clonnedEffect.Enabled = true
+				elseif clonnedEffect.Name == "FireHit" then
+					clonnedEffect.Enabled = false
+					HitParticle = clonnedEffect
 				end
 
-				table.insert(effectsTable, clonnedEffect)
+				table.insert(VFXTable, clonnedEffect)
 			end
 		end
 		if SfxTargetFolder then
@@ -66,6 +71,8 @@ function Burned:Active(player, _, _)
 				local clonnedSFX = AllSfxTemplates:Clone()
 				if clonnedSFX.Name == "LoopBurn" then
 					clonnedSFX.Looped = true
+				elseif clonnedSFX.Name == "FireHit" then
+					HitSFX = clonnedSFX
 				end
 				clonnedSFX.Parent = player.Character.Head
 				table.insert(SfxTable, clonnedSFX)
@@ -78,9 +85,6 @@ function Burned:Active(player, _, _)
 				local BurnedTime = playerData.Debuffes["Burned"].RemainingTime
 				local remainingBurnedTime = math.clamp(BurnedTime - 1, 0, math.huge)
 
-				local HitEffect = effectsTable[1]
-
-				local HitSFX = SfxTable[1]
 				if HitSFX then
 					if not HitSFX.Playing then
 						HitSFX:Play()
@@ -88,11 +92,12 @@ function Burned:Active(player, _, _)
 				else
 					warn("HIT SFX DE YOK KRAL")
 				end
-				if not HitEffect.Enabled then
-					HitEffect.Enabled = true
+
+				if HitParticle and not HitParticle.Enabled then
+					HitParticle.Enabled = true
 					print("BurnedEffectOnyadi")
-					task.delay(0.6, function()
-						HitEffect.Enabled = false
+					task.delay(0.4, function()
+						HitParticle.Enabled = false
 					end)
 				else
 					warn("BurnHitEffecti yok")
@@ -100,7 +105,7 @@ function Burned:Active(player, _, _)
 				self.KnitServices["EffectService"]:CreateShake(player, "Burned")
 				if remainingBurnedTime <= 0 then
 					self.KnitServices["PlayerService"]:RemoveDebuff(player, "Burned")
-					self:Remove(player, effectsTable, SfxTable)
+					self:Remove(player, VFXTable, SfxTable)
 					break
 				elseif remainingBurnedTime > 0 then
 					local RemainingHP = math.clamp(

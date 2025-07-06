@@ -28,7 +28,7 @@ local KickStyleDatas = {
 			},
 			Chance = 40,
 			HitboxTarget = { "Right Leg" },
-			Cosmetic = { DisplayName = "Sweep", Font = "King", Image = "rbxassetid://126114183807477" },
+			Cosmetic = { DisplayName = "Sweep", Font = "ComicNeue", Image = "rbxassetid://126114183807477" },
 		},
 
 		Kick = {
@@ -58,7 +58,7 @@ local KickStyleDatas = {
 			},
 			Chance = 40,
 			HitboxTarget = { "Right Leg" },
-			Cosmetic = { DisplayName = "Push", Font = "CeasarDressing", Image = "rbxassetid://83064034582961" },
+			Cosmetic = { DisplayName = "Push", Font = "CeasarDressing", Image = "rbxassetid://92320441156903" },
 		},
 
 		Twister = {

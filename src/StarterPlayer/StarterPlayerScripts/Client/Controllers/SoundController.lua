@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 
 local Knit = require(ReplicatedStorage.Packages.knit)
 local Promise = require(Knit.Util.Promise)
@@ -13,7 +14,18 @@ local SoundController = Knit.CreateController({
 
 function SoundController:CloseTheSound(soundName)
 	if self.PlayersSounds[soundName] and self.PlayersSounds[soundName].IsPlaying then
-		self.PlayersSounds[soundName]:Stop()
+		local oldVolume = self.PlayersSounds[soundName].Volume
+		local targetSoundTween = TweenService:Create(
+			self.PlayersSounds[soundName],
+			TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In, 0, false, 0),
+			{ Volume = 0 }
+		)
+		targetSoundTween:Play()
+		targetSoundTween.Completed:Once(function()
+			self.PlayersSounds[soundName].Volume = oldVolume
+			self.PlayersSounds[soundName]:Stop()
+			targetSoundTween:Destroy()
+		end)
 	end
 end
 

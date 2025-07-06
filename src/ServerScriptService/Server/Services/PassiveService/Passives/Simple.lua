@@ -10,8 +10,6 @@ function Simple:Start(player, otherDatas)
 	Services["RagdollService"] = Services["RagdollService"] or Knit.GetService("RagdollService")
 	local HittedPlayer = otherDatas.HittedPlayer or nil
 	local SimpleEffectFolder = ReplicatedStorage.Shared.Assets.VFX.Passives.Auras:FindFirstChild("Simple")
-	local effectTable = {}
-
 	if not HittedPlayer then
 		warn("Vuracak Kimse yok")
 	elseif HittedPlayer then
@@ -22,8 +20,13 @@ function Simple:Start(player, otherDatas)
 					then otherDatas.HittedPlayer.Character.Torso
 					else otherDatas.HittedPlayer.Torso
 				clonnedEffect.Enabled = true
+				task.delay(clonnedEffect:GetAttribute("EnabledTime") or 1, function()
+					clonnedEffect.Enabled = false
+					task.delay(clonnedEffect:GetAttribute("DiseableTime") or 0.5, function()
+						clonnedEffect:Destroy()
+					end)
+				end)
 				--clonnedEffect:Emit(clonnedEffect.Rate)
-				table.insert(effectTable, clonnedEffect)
 			end
 		else
 			print("Effect YOOOK")
@@ -40,14 +43,6 @@ function Simple:Start(player, otherDatas)
 		end
 		print("Ragdolladim")
 	end
-	task.delay(0.75, function()
-		for _, allEffects in effectTable do
-			allEffects.Enabled = false
-			task.delay(1, function()
-				allEffects:Destroy()
-			end)
-		end
-	end)
 end
 
 return Simple

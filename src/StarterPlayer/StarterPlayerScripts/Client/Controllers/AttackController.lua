@@ -202,7 +202,11 @@ function AttackController:StartKickAttack(atackpower)
 									local KnockBackDatas = {
 										Direction = Char.HumanoidRootPart.CFrame.LookVector,
 										KnockPower = atackpower,
-										RagdollDuration = 2.5,
+										RagdollDuration = math.clamp(
+											(atackpower / self.PlayersAttackData.MaxPower) * 2.5,
+											1,
+											2.5
+										),
 									}
 									if
 										game.Players:GetPlayerFromCharacter(allTouchingitems.Parent)
